@@ -3,6 +3,7 @@ import django
 import random
 from datetime import date, timedelta
 from faker import Faker
+from django.db import connection
 
 # Setup Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
@@ -98,7 +99,7 @@ def insert_fake_data():
         )
         # Insert corresponding Pagamento
         Pagamentos.objects.create(
-            metodo_pagamento=random.choice(['Credit Card', 'PayPal', 'Bank Transfer'])[:50],  # Truncate payment method to 50 chars
+            metodo_pagamento=random.choice(['Credit Card', 'PayPal', 'Bank Transfer', 'MBWAY'])[:50],  # Truncate payment method to 50 chars
             valor_pago=pedido.valor_total,
             id_pedido=pedido,
             estado_pagamento=random.choice(['Completed', 'Pending', 'Failed'])[:50]  # Truncate payment status to 50 chars
@@ -115,6 +116,49 @@ def insert_fake_data():
         )
 
     print("Fake data inserted successfully!")
+
+
+
+
+
+#Trigers
+
+# Triggers
+def insert_triggers():
+    trigger_sql = """
+    CREATE OR REPLACE FUNCTION reduce_stock() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE store_stock
+        SET quantidade_disponivel = quantidade_disponivel - 1
+        WHERE id_produto = NEW.id_produto_id AND quantidade_disponivel > 0;
+
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE TRIGGER reduce_stock_trigger
+    AFTER INSERT ON store_pedido
+    FOR EACH ROW
+    EXECUTE FUNCTION reduce_stock();
+    """
+    
+    with connection.cursor() as cursor:
+        cursor.execute(trigger_sql)
+    
+    print("Triggers created successfully!")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     insert_fake_data()
