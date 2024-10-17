@@ -4,32 +4,51 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'autenticacao/css/LoginStyle.css' %}">
+<!-- Add Font Awesome CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<style>
+  .input-icon {
+    position: relative;
+  }
+  .input-icon i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #495057;
+  }
+  .input-icon input {
+    padding-left: 35px;
+  }
+</style>
 
-<div class="container-fluid vh-100 vw-100 d-flex align-items-center justify-content-center bg-light">
+<div class="container-fluid vh-100 vw-100 d-flex align-items-center justify-content-center bg">
   <div class="row w-100 h-100">
     <!-- Left Column: Form -->
-    <div class="col-md-6 d-flex flex-column align-items-start justify-content-center p-5">
-      <h1 class="display-3 font-weight-bold text-left mb-3">BEM VINDO</h1>
-      <p class="lead text-left mb-4">Estamos contentes por te termos de volta</p>
+    <div class="col-md-6 d-flex flex-column align-items-center justify-content-center p-5 text-white">
+      <div class="text-center mb-4">
+        <h1 class="display-1 font-weight-bold mb-3 black">BEM VINDO</h1>
+        <p class="lead mb-4 black">Estamos contentes por te termos de volta</p>
+      </div>
 
       <form class="w-100" style="max-width: 400px;" method="post" action="{% url 'login' %}">
         {% csrf_token %}
-        <div class="form-group mb-3">
-          <label for="username"><i class="fas fa-user mr-2"></i>Username</label>
-          <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="Insere o teu username" required>
+        <div class="form-group mb-3 input-icon">
+          <i class="fas fa-user"></i>
+          <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="Username" required>
         </div>
-        <div class="form-group mb-4">
-          <label for="password"><i class="fas fa-lock mr-2"></i>Password</label>
-          <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Insere a tua password" required>
+        <div class="form-group mb-4 input-icon">
+          <i class="fas fa-lock"></i>
+          <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Password" required>
         </div>
-        <button type="submit" class="btn btn-dark btn-block btn-lg">Login</button>
+        <button type="submit" class="btn btn-dark btn-block btn-lg login-button">Login</button>
       </form>
     </div>
 
     <!-- Right Column: Image -->
-    <div class="col-md-6 d-none d-md-block">
-      <img class="img-fluid w-100 h-100" src="{% static 'autenticacao/images/image-10.png' %}" alt="Background Image" style="object-fit: cover;">
+    <div class="col-md-6 d-none d-md-block d-flex justify-content-center align-items-center">
+      <img class="bandImg" src="{% static 'autenticacao/images/image-10.png' %}" alt="Background Image">
     </div>
   </div>
 </div>
