@@ -8,4 +8,8 @@ def index(request):
 
 
 def login(request):
+    #check if the user is authenticated if so render the home page
     return render(request, 'login.html')
+
+def register(request):
+    return render(request, 'register.html')
