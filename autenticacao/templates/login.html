@@ -16,16 +16,17 @@
 
       <form class="w-100" style="max-width: 400px;" method="post" action="{% url 'login' %}">
         {% csrf_token %}
-        <div class="form-group mb-3 input-icon">
+        <div class="form-group mb-3 input-icon position-relative">
           <i class="fas fa-user"></i>
           <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="Username" required>
         </div>
-        <div class="form-group mb-4 input-icon">
+        <div class="form-group mb-4 input-icon position-relative">
           <i class="fas fa-lock"></i>
           <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Password" required>
         </div>
         <button type="submit" class="btn btn-dark btn-block btn-lg login-button">Login</button>
       </form>
+      
     </div>
 
     <!-- Right Column: Image -->

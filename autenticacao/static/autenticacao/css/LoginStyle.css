@@ -87,3 +87,22 @@ label {
     margin-top: 20px !important;
 }
 
+
+
+.input-icon {
+    position: relative;
+  }
+  
+  .input-icon i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+    color: #aaa;
+  }
+  
+  .input-icon input {
+    padding-left: 40px; /* Adjust this value depending on icon size */
+  }
+  
