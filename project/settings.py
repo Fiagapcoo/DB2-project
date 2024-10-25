@@ -127,6 +127,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
 # Caminho onde os arquivos estáticos são coletados (após rodar collectstatic)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
