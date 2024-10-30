@@ -4,7 +4,6 @@
 /*==============================================================*/
 -- Create the database
 CREATE DATABASE DB2_Pratic;
-
 -- Connect to the database
 \c DB2_Pratic;
 
@@ -30,11 +29,11 @@ CALL remove_all_tables();
 -- schema drops
 DROP SCHEMA IF EXISTS SECURITY CASCADE;
 DROP SCHEMA IF EXISTS HR CASCADE;
-DROP SCHEMA IF EXISTS CONTROL CASCADE;
+-- DROP SCHEMA IF EXISTS CONTROL CASCADE; --mongoDB
 DROP SCHEMA IF EXISTS STATIC_CONTENT CASCADE;
 DROP SCHEMA IF EXISTS DYNAMIC_CONTENT CASCADE;
 DROP SCHEMA IF EXISTS TRANSACTIONS CASCADE;
-DROP SCHEMA IF EXISTS PROMOS CASCADE;
+-- DROP SCHEMA IF EXISTS PROMOS CASCADE;
 
  /** 
   .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------. 
@@ -132,17 +131,17 @@ CREATE TABLE HR.User_payment (
     CONSTRAINT fk_user_payment_addressid FOREIGN KEY (Billing_AddressID) REFERENCES HR.User_address(AddressID)
 );
 
--- CONTROL
-CREATE TABLE CONTROL.audit_log (
-    LogID SERIAL PRIMARY KEY,
-    RecordID INT NOT NULL,
-    Modified_by INT NOT NULL,
-    Field_Changed VARCHAR(100),
-    Old_value TEXT,
-    New_value TEXT,
-    Edit_type VARCHAR(50),
-    CONSTRAINT fk_audit_log_userid FOREIGN KEY (Modified_by) REFERENCES HR.Users(UserID)
-);
+-- CONTROL - MONGODB
+-- CREATE TABLE CONTROL.audit_log (
+--     LogID SERIAL PRIMARY KEY,
+--     RecordID INT NOT NULL,
+--     Modified_by INT NOT NULL,
+--     Field_Changed VARCHAR(100),
+--     Old_value TEXT,
+--     New_value TEXT,
+--     Edit_type VARCHAR(50),
+--     CONSTRAINT fk_audit_log_userid FOREIGN KEY (Modified_by) REFERENCES HR.Users(UserID)
+-- );
 
 -- STATIC_CONTENT
 CREATE TABLE STATIC_CONTENT.Categories (
@@ -180,15 +179,15 @@ CREATE TABLE DYNAMIC_CONTENT.Stock (
     CONSTRAINT fk_stock_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID)
 );
 
-CREATE TABLE DYNAMIC_CONTENT.Cart (
-    CartID SERIAL PRIMARY KEY,
-    UserID INT NOT NULL,
-    ProductID INT NOT NULL,
-    Quantity INT,
-    CreatedAt TIMESTAMP,
-    CONSTRAINT fk_cart_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID),
-    CONSTRAINT fk_cart_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID)
-);
+-- CREATE TABLE DYNAMIC_CONTENT.Cart (
+--     CartID SERIAL PRIMARY KEY,
+--     UserID INT NOT NULL,
+--     ProductID INT NOT NULL,
+--     Quantity INT,
+--     CreatedAt TIMESTAMP,
+--     CONSTRAINT fk_cart_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID),
+--     CONSTRAINT fk_cart_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID)
+-- );
 
 -- TRANSACTIONS
 CREATE TABLE TRANSACTIONS.Orders (
@@ -212,43 +211,26 @@ CREATE TABLE TRANSACTIONS.Payments (
     CONSTRAINT fk_payments_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID)
 );
 
-CREATE TABLE TRANSACTIONS.Reservations (
-    ReservationID SERIAL PRIMARY KEY,
-    UserID INT NOT NULL,
-    ReservationCode VARCHAR(50),
-    ProductID INT NOT NULL,
-    ReservationStatus VARCHAR(50),
-    CONSTRAINT fk_reservations_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID),
-    CONSTRAINT fk_reservations_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID)
-);
+-- CREATE TABLE TRANSACTIONS.Reservations (
+--     ReservationID SERIAL PRIMARY KEY,
+--     UserID INT NOT NULL,
+--     ReservationCode VARCHAR(50),
+--     ProductID INT NOT NULL,
+--     ReservationStatus VARCHAR(50),
+--     CONSTRAINT fk_reservations_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID),
+--     CONSTRAINT fk_reservations_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID)
+-- );
 
--- PROMOS
-CREATE TABLE PROMOS.Promotions (
-    PromoID SERIAL PRIMARY KEY,
-    Code VARCHAR(50) UNIQUE,
-    Description TEXT,
-    DiscountAmount NUMERIC(10, 2),
-    DiscountPercentage DECIMAL(5, 2),
-    ValidUntil DATE,
-    ProductID INT,
-    CategoryID INT,
-    CONSTRAINT fk_promos_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID),
-    CONSTRAINT fk_promos_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID)
-);
-
--- Procedure to remove all tables from all schemas
-CREATE OR REPLACE PROCEDURE remove_all_tables()
-AS $$
-DECLARE
-    table_record RECORD;
-    schema_record RECORD;
-BEGIN
-    FOR schema_record IN SELECT schema_name FROM information_schema.schemata
-    LOOP
-        FOR table_record IN SELECT table_name FROM information_schema.tables WHERE table_schema = schema_record.schema_name
-        LOOP
-            EXECUTE 'DROP TABLE IF EXISTS ' || schema_record.schema_name || '.' || table_record.table_name || ' CASCADE';
-        END LOOP;
-    END LOOP;
-END;
-$$ LANGUAGE plpgsql;
+-- -- PROMOS
+-- CREATE TABLE PROMOS.Promotions (
+--     PromoID SERIAL PRIMARY KEY,
+--     Code VARCHAR(50) UNIQUE,
+--     Description TEXT,
+--     DiscountAmount NUMERIC(10, 2),
+--     DiscountPercentage DECIMAL(5, 2),
+--     ValidUntil DATE,
+--     ProductID INT,
+--     CategoryID INT,
+--     CONSTRAINT fk_promos_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID),
+--     CONSTRAINT fk_promos_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID)
+-- );
