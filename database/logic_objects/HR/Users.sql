@@ -1,3 +1,34 @@
+CREATE OR REPLACE PROCEDURE HR.InsertUser(
+    p_Name VARCHAR(100),
+    p_Phone VARCHAR(20),
+    p_Email VARCHAR(100),
+    p_HashedPassword VARCHAR(255),
+    p_ProfilePic VARCHAR(255) = NULL,
+    p_IsManager BOOLEAN = FALSE
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO HR.Users (
+        Name, 
+        Phone, 
+        Email, 
+        HashedPassword,
+        ProfilePic,
+        IsManager
+    )
+    VALUES (
+        p_Name,
+        p_Phone,
+        p_Email,
+        p_HashedPassword,
+        p_ProfilePic,
+        p_IsManager
+    );
+END;
+$$;
+
+
 CREATE OR REPLACE FUNCTION HR.user_insert_trigger_func()
 RETURNS TRIGGER AS $$
 BEGIN

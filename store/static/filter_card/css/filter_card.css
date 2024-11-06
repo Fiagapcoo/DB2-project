@@ -1,3 +1,4 @@
+/* Mantém o estilo básico */
 * {
     margin: 0;
     padding: 0;
@@ -47,21 +48,24 @@ select {
     width: 100%;
     -webkit-appearance: none;
     background: transparent;
-    pointer-events: none; /* Faz com que o slider seja apenas visual */
+    pointer-events: all;
     accent-color: #007bff;
 }
 
-#price-min {
-    pointer-events: all; /* Ativa o input no preço mínimo */
-}
-
-#price-max {
-    pointer-events: all; /* Ativa o input no preço máximo */
+#price-min::-webkit-slider-thumb,
+#price-max::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #007bff;
+    cursor: pointer;
 }
 
 .slider-bubble {
     position: absolute;
-    top: -40px; /* Posiciona a bolha acima do slider */
+    top: -40px;
     background-color: #007bff;
     color: white;
     padding: 5px 10px;
@@ -90,20 +94,45 @@ select {
     font-weight: bold;
 }
 
-.rating {
+/* Estilos para a avaliação com checkboxes */
+.rating-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.rating-option {
     display: flex;
     align-items: center;
-    margin-top: 10px;
+    cursor: pointer;
 }
 
-.star, .half-star {
+.rating-option input[type="checkbox"] {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.rating-option .stars {
+    display: flex;
+    margin-right: 8px;
+}
+
+.rating-option .star {
+    font-size: 24px;
     color: #ffc107;
-    font-size: 20px;
-    margin-right: 2px;
 }
 
-.half-star {
-    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
-    display: inline-block;
-    overflow: hidden;
+.rating-option .star.empty {
+    color: #ccc; /* Estrelas vazias em cinza */
+}
+
+#price-slider {
+    height: 10px; /* Ajuste conforme necessário */
+}
+
+#price-slider {
+    width: 100%;
+    height: 10px;
+    background: #ddd; /* ou qualquer cor de fundo */
 }
