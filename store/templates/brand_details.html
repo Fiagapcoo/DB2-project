@@ -1,0 +1,56 @@
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'brand_details/css/brand_details.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="left-section">
+        <img src="{% static 'brand_details/images/shure.png' %}" alt="Shure Logo" class="brand-logo">
+        <p class="brand-description">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+            dolore magna aliqua. Mus mauris vitae ultricies leo integer malesuada nunc. In nulla posuere sollicitudin
+            aliquam ultrices. Morbi blandit cursus risus at ultrices mi tempus imperdiet. Libero enim sed faucibus
+            turpis in. Cursus mattis molestie a iaculis at erat. Nibh cras pulvinar mattis nunc sed blandit libero.
+            Pellentesque elit ullamcorper dignissim cras tincidunt. Pharetra et ultrices neque ornare aenean euismod
+            elementum.
+        </p>
+    </div>
+
+    <div class="right-section">
+        <h2>Produtos Recentes</h2>
+        <ul class="product-list">
+            <li class="product-item">
+                <img src="{% static 'brand_details/images/guitarra.png' %}" alt="Guitarra" class="product-image">
+                <div class="product-info">
+                    <p class="product-name">Guitarra</p>
+                    <p class="product-price">200.00 €</p>
+                </div>
+            </li>
+            <li class="product-item">
+                <img src="{% static 'brand_details/images/guitarra.png' %}" alt="Bateria" class="product-image">
+                <div class="product-info">
+                    <p class="product-name">Bateria</p>
+                    <p class="product-price">500.00 €</p>
+                </div>
+            </li>
+            <li class="product-item">
+                <img src="{% static 'brand_details/images/guitarra.png' %}" alt="Piano Elétrico" class="product-image">
+                <div class="product-info">
+                    <p class="product-name">Piano Elétrico</p>
+                    <p class="product-price">234.00 €</p>
+                </div>
+            </li>
+            <li class="product-item">
+                <img src="{% static 'brand_details/images/guitarra.png' %}" alt="Coluna de Som" class="product-image">
+                <div class="product-info">
+                    <p class="product-name">Coluna de Som</p>
+                    <p class="product-price">199.98 €</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

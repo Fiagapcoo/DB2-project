@@ -1,0 +1,67 @@
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'product_details/css/product_details.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="product-container">
+    <!-- Imagens Laterais e Principal -->
+    <div class="product-images">
+        <div class="thumbnail-images">
+            <img src="{% static 'product_details/images/guitarra.png' %}" alt="Thumbnail 1">
+            <img src="{% static 'product_details/images/guitarra.png' %}" alt="Thumbnail 2">
+            <img src="{% static 'product_details/images/guitarra.png' %}" alt="Thumbnail 3">
+            <img src="{% static 'product_details/images/guitarra.png' %}" alt="Thumbnail 4">
+        </div>
+        <div class="main-image">
+            <img src="{% static 'product_details/images/guitarra.png' %}" alt="Imagem Principal da Guitarra">
+        </div>
+    </div>
+
+    <!-- Detalhes do Produto -->
+    <div class="product-details">
+        <h1>Guitarra</h1>
+        <p class="price">€ 250,000.00</p>
+        
+        <!-- Avaliação com estrelas -->
+        <div class="rating">
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="half-star">★</span>
+            <span class="reviews">5 Reviews de Utilizadores</span>
+        </div>
+
+        <!-- Descrição do Produto -->
+        <p class="description">
+            Guitarra muito boa para quem quer ter uma guitarra, de resto é completamente inútil. Tocada com os dedos ou com uma palheta. Muito elegante e de qualidade superior.
+        </p>
+
+        <!-- Opções de Cor -->
+        <div class="color-options">
+            <p>Cor</p>
+            <div class="color-circle purple"></div>
+            <div class="color-circle black"></div>
+            <div class="color-circle gold"></div>
+        </div>
+
+        <!-- Quantidade e Botão de Adicionar ao Carrinho -->
+        <div class="quantity-add-cart">
+            <div class="counter-container">
+                <button class="counter-btn" onclick="decrement()">-</button>
+                
+                <!-- Input editável para o valor do contador -->
+                <input type="number" id="counter-value" class="counter-input" value="1" min="1">
+                
+                <button class="counter-btn" onclick="increment()">+</button>
+            </div>
+            <button class="add-cart-btn">Adicionar ao Carrinho</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'product_details/js/product_details.js' %}"></script>
+{% endblock %}

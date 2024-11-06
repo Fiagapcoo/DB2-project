@@ -1,0 +1,79 @@
+/* Container principal da página */
+.container {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+/* Seção esquerda (logotipo e descrição) */
+.left-section {
+    flex: 2;
+    background-color: #f9f9f9;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.brand-logo {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.brand-description {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Seção direita (produtos recentes) */
+.right-section {
+    flex: 1;
+}
+
+.right-section h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* Lista de produtos */
+.product-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.product-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.product-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 1rem;
+}
+
+.product-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.product-price {
+    font-size: 14px;
+    color: #888;
+    margin-top: 2px;
+}

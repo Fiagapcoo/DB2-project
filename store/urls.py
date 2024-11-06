@@ -8,4 +8,6 @@ urlpatterns = [
     path("navbar", views.navbar, name="navbar"),
     path("brand", views.brand, name="brand"),
     path("filter_card", views.filter_card, name="filter_card"),
+    path("product_details", views.product_details, name="product_details"),
+    path("brand_details", views.brand_details, name="brand_details"),
 ]

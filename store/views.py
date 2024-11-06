@@ -20,3 +20,9 @@ def brand(request):
 
 def filter_card(request):
     return render(request, 'filter_card.html')
+
+def product_details(request):
+    return render(request, 'product_details.html')
+
+def brand_details(request):
+    return render(request, 'brand_details.html')

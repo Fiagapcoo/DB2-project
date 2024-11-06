@@ -1,0 +1,188 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+}
+
+.product-container {
+    display: flex;
+    gap: 20px;
+    max-width: 100%;
+    margin: 50px auto;
+}
+
+/* Estilo para o container das imagens do produto */
+.product-images {
+    display: flex;
+    flex-direction: row; /* Miniaturas e imagem principal lado a lado */
+    align-items: flex-start;
+    margin-left: 5%;
+}
+
+/* Miniaturas */
+.thumbnail-images {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.thumbnail-images img {
+    width: 60px;
+    border: 2px solid #d8d2f4;
+    cursor: pointer;
+}
+
+/* Estilo da imagem principal com fundo amarelo */
+.main-image {
+    position: relative;
+    width: 250px;
+    height: 300px; /* Altura ajustada para acomodar o fundo amarelo */
+    background-color: #F9F1E7; /* Fundo amarelo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 10px;
+    margin-left: 20px;
+}
+
+.main-image img {
+    width: 90%; /* Tamanho da imagem ajustado para caber no fundo */
+    border-radius: 8px;
+}
+
+.product-details {
+    max-width: 70%;
+    margin-left: 4%;
+}
+
+.product-details h1 {
+    font-size: 24px;
+}
+
+.price {
+    font-size: 22px;
+    color: #999;
+    margin: 10px 0;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.star {
+    color: #ffc107;
+    font-size: 20px;
+}
+
+.half-star {
+    color: #ffc107;
+    font-size: 20px;
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+    display: inline-block;
+    overflow: hidden;
+}
+
+.reviews {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.description {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+    width: 60%;
+}
+
+.color-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.color-options p {
+    font-size: 16px;
+}
+
+.color-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.purple { background-color: #8a4aff; }
+.black { background-color: #000000; }
+.gold { background-color: #d4af37; }
+
+.quantity-add-cart {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.counter-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #000;
+    border-radius: 10px;
+    padding: 5px;
+    width: fit-content;
+}
+
+.counter-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+    padding: 0 10px;
+}
+
+/* Estilos do input */
+.counter-input {
+    background-color: transparent;
+    width: 50px;
+    text-align: center;
+    font-size: 18px;
+    border: none;
+    outline: none;
+}
+
+/* Remove as setas do input de número */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+
+.add-cart-btn {
+    padding: 10px 15px;
+    background-color: transparent;
+    color: #000;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
+    border-color: #000;
+}
+
+.add-cart-btn:hover {
+    background-color: #000;
+    color: #fff;
+}
