@@ -4,6 +4,7 @@
 <!-- Adicione Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{% static 'filter_card/css/filter_card.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.css" />
 {% endblock %}
 
 {% block content %}
@@ -23,74 +24,125 @@
     </select>
 
     <label for="price-range" class="form-label">Preço</label>
+
+    <!-- Div do slider de preço noUiSlider -->
+    <div id="price-slider" class="mt-3" style="height: 10px;"></div>
     
-    <!-- Range slider container -->
-    <div class="range-slider">
-        <input type="range" class="form-range" id="price-min" min="0" max="500" step="10" value="100" oninput="updateRangeSlider()">
-        <input type="range" class="form-range" id="price-max" min="0" max="500" step="10" value="400" oninput="updateRangeSlider()">
-        
-        <!-- Bubble for showing the minimum price -->
-        <div class="slider-bubble" id="bubble-min">$100</div>
-
-        <!-- Bubble for showing the maximum price -->
-        <div class="slider-bubble" id="bubble-max">$400</div>
-    </div>
-
-    <!-- Display min and max values -->
-    <div class="price-display d-flex justify-content-between mt-3">
-        <input type="text" id="min-value" class="price-input" value="$100" readonly>
+    <!-- Exibição dos valores selecionados -->
+    <div class="price-display mt-2">
+        <input type="text" id="min-value" class="price-input" readonly>
         <span> - </span>
-        <input type="text" id="max-value" class="price-input" value="$400" readonly>
+        <input type="text" id="max-value" class="price-input" readonly>
     </div>
 
     <label class="mt-3">Avaliação</label>
-    <div class="rating">
-        <span class="star">★</span>
-        <span class="star">★</span>
-        <span class="star">★</span>
-        <span class="star">★</span>
-        <span class="half-star">★</span>
+    <div class="rating-filter">
+        <!-- Checkbox and rating for 4 stars -->
+        <label class="rating-option">
+            <input type="checkbox" name="rating" value="4" class="rating-checkbox">
+            <span class="stars">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star empty">★</span>
+            </span>
+            & Up
+        </label>
+
+        <!-- Checkbox and rating for 3 stars -->
+        <label class="rating-option">
+            <input type="checkbox" name="rating" value="3" class="rating-checkbox">
+            <span class="stars">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star empty">★</span>
+                <span class="star empty">★</span>
+            </span>
+            & Up
+        </label>
+
+        <!-- Checkbox and rating for 2 stars -->
+        <label class="rating-option">
+            <input type="checkbox" name="rating" value="2" class="rating-checkbox">
+            <span class="stars">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star empty">★</span>
+                <span class="star empty">★</span>
+                <span class="star empty">★</span>
+            </span>
+            & Up
+        </label>
+
+        <!-- Checkbox and rating for 1 star -->
+        <label class="rating-option">
+            <input type="checkbox" name="rating" value="1" class="rating-checkbox">
+            <span class="stars">
+                <span class="star">★</span>
+                <span class="star empty">★</span>
+                <span class="star empty">★</span>
+                <span class="star empty">★</span>
+                <span class="star empty">★</span>
+            </span>
+            & Up
+        </label>
     </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.js"></script>
+
 
 <script>
-    function updateRangeSlider() {
-        const minSlider = document.getElementById("price-min");
-        const maxSlider = document.getElementById("price-max");
-        const bubbleMin = document.getElementById("bubble-min");
-        const bubbleMax = document.getElementById("bubble-max");
+
+// Selecionar as checkboxes de avaliação
+const ratingCheckboxes = document.querySelectorAll(".rating-checkbox");
+
+// Adicionar evento de clique em cada checkbox para garantir seleção exclusiva
+ratingCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener("change", () => {
+        // Se a checkbox foi marcada, desmarcar todas as outras
+        if (checkbox.checked) {
+            ratingCheckboxes.forEach(otherCheckbox => {
+                if (otherCheckbox !== checkbox) {
+                    otherCheckbox.checked = false;
+                }
+            });
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const priceSlider = document.getElementById('price-slider');
+
+    if (priceSlider) {  // Verifica se o elemento existe
+        noUiSlider.create(priceSlider, {
+            start: [300, 1200], // Valores iniciais
+            connect: true,
+            range: {
+                'min': 0,
+                'max': 5000
+            },
+            format: {
+                to: (value) => `${Math.round(value)}€`,
+                from: (value) => Number(value.replace('€', ''))
+            }
+        });
+
+        // Referências aos inputs de exibição
         const minValueDisplay = document.getElementById("min-value");
         const maxValueDisplay = document.getElementById("max-value");
-    
-        let minVal = parseInt(minSlider.value);
-        let maxVal = parseInt(maxSlider.value);
-    
-        // Impedir que os sliders se cruzem
-        if (minVal >= maxVal) {
-            minSlider.value = maxVal - 10;
-            minVal = maxVal - 10;
-        }
-    
-        if (maxVal <= minVal) {
-            maxSlider.value = minVal + 10;
-            maxVal = minVal + 10;
-        }
-    
-        // Atualizar os valores nas bolhas e nas exibições de entrada
-        bubbleMin.textContent = `$${minVal}`;
-        bubbleMax.textContent = `$${maxVal}`;
-        minValueDisplay.value = `$${minVal}`;
-        maxValueDisplay.value = `$${maxVal}`;
-    
-        // Calcular posições das bolhas com base nos valores do slider
-        const sliderWidth = minSlider.offsetWidth;
-        const minPosition = (minVal / maxSlider.max) * sliderWidth;
-        const maxPosition = (maxVal / maxSlider.max) * sliderWidth;
-    
-        bubbleMin.style.left = `calc(${minPosition}px - 10px)`;
-        bubbleMax.style.left = `calc(${maxPosition}px - 10px)`;
+
+        // Atualizar os valores exibidos quando o slider é movimentado
+        priceSlider.noUiSlider.on('update', function (values) {
+            minValueDisplay.value = values[0];
+            maxValueDisplay.value = values[1];
+        });
     }
+});
+
 </script>
-    
+{% endblock %}
