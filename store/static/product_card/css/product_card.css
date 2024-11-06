@@ -1,0 +1,78 @@
+.card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0; /* Fundo da página */
+}
+
+.product-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    /*padding: 20px;*/
+    text-align: left;
+    transition: transform 0.2s ease-in-out;
+    overflow: hidden; /* Certifique-se de que o conteúdo extra não "vaze" */
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.image-wrapper {
+    background: radial-gradient(circle at top left, #FBFBFB, #D3D3D3);
+    padding: 20px;
+    border-radius: 8px 8px 0px 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*margin-bottom: 15px;*/
+}
+
+.product-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.product-details {
+    padding: 10px 20px 20px 20px;
+}
+
+.product-brand {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: inline-block;
+}
+
+.product-price {
+    font-size: 18px;
+    color: #333;
+    font-weight: bold;
+    float: right;
+    margin-bottom: 10px;
+}
+
+.product-description {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 20px;
+    clear: both; /* Para garantir que o preço e o nome não sobreponham a descrição */
+}
+
+.availability {
+    display: flex;
+    gap: 10px; /* Espaço entre os itens de disponibilidade */
+}
+
+.availability-item {
+    font-size: 12px;
+    color: #666;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+}

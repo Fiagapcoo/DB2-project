@@ -1,0 +1,25 @@
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'product_card/css/product_card.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card-container">
+    <div class="product-card">
+        <div class="image-wrapper">
+            <img src="{% static 'product_card/images/guitarra.png' %}" alt="Guitar" class="product-image">
+        </div>
+        <div class="product-details">
+            <h2 class="product-brand">Brand Name</h2>
+            <p class="product-price">$2,995</p>
+            <p class="product-description">Product description here</p>
+            <div class="availability">
+                <span class="availability-item">0 colors available</span>
+                <span class="availability-item">0 lengths available</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

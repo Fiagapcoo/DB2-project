@@ -1,0 +1,19 @@
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'brand/css/brand.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card-container">
+    <div class="brand-card">
+        <div class="image-wrapper">
+            <img src="{% static 'brand/images/shure.png' %}" alt="Guitar" class="product-image">
+        </div>
+        <div class="brand-details">
+            <h2 class="brand-name">Shure</h2>
+        </div>
+    </div>
+</div>
+{% endblock %}

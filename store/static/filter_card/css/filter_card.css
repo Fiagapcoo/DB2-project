@@ -1,0 +1,109 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f9;
+}
+
+.filter-card {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+select {
+    width: 75%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.range-slider {
+    position: relative;
+    width: 100%;
+    height: 50px;
+}
+
+.form-range {
+    position: absolute;
+    width: 100%;
+    -webkit-appearance: none;
+    background: transparent;
+    pointer-events: none; /* Faz com que o slider seja apenas visual */
+    accent-color: #007bff;
+}
+
+#price-min {
+    pointer-events: all; /* Ativa o input no preço mínimo */
+}
+
+#price-max {
+    pointer-events: all; /* Ativa o input no preço máximo */
+}
+
+.slider-bubble {
+    position: absolute;
+    top: -40px; /* Posiciona a bolha acima do slider */
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.price-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #6c757d;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.price-input {
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 60px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.star, .half-star {
+    color: #ffc107;
+    font-size: 20px;
+    margin-right: 2px;
+}
+
+.half-star {
+    clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+    display: inline-block;
+    overflow: hidden;
+}

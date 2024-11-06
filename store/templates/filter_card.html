@@ -1,0 +1,96 @@
+{% load static %}
+
+{% block extra_css %}
+<!-- Adicione Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="{% static 'filter_card/css/filter_card.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="filter-card">
+    <label for="marca">Marca</label>
+    <select id="marca" class="form-select">
+        <option>Select a category</option>
+        <option>Marca A</option>
+        <option>Marca B</option>
+    </select>
+
+    <label for="modelo" class="mt-3">Modelo</label>
+    <select id="modelo" class="form-select">
+        <option>Select a category</option>
+        <option>Modelo X</option>
+        <option>Modelo Y</option>
+    </select>
+
+    <label for="price-range" class="form-label">Preço</label>
+    
+    <!-- Range slider container -->
+    <div class="range-slider">
+        <input type="range" class="form-range" id="price-min" min="0" max="500" step="10" value="100" oninput="updateRangeSlider()">
+        <input type="range" class="form-range" id="price-max" min="0" max="500" step="10" value="400" oninput="updateRangeSlider()">
+        
+        <!-- Bubble for showing the minimum price -->
+        <div class="slider-bubble" id="bubble-min">$100</div>
+
+        <!-- Bubble for showing the maximum price -->
+        <div class="slider-bubble" id="bubble-max">$400</div>
+    </div>
+
+    <!-- Display min and max values -->
+    <div class="price-display d-flex justify-content-between mt-3">
+        <input type="text" id="min-value" class="price-input" value="$100" readonly>
+        <span> - </span>
+        <input type="text" id="max-value" class="price-input" value="$400" readonly>
+    </div>
+
+    <label class="mt-3">Avaliação</label>
+    <div class="rating">
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="half-star">★</span>
+    </div>
+</div>
+{% endblock %}
+
+
+<script>
+    function updateRangeSlider() {
+        const minSlider = document.getElementById("price-min");
+        const maxSlider = document.getElementById("price-max");
+        const bubbleMin = document.getElementById("bubble-min");
+        const bubbleMax = document.getElementById("bubble-max");
+        const minValueDisplay = document.getElementById("min-value");
+        const maxValueDisplay = document.getElementById("max-value");
+    
+        let minVal = parseInt(minSlider.value);
+        let maxVal = parseInt(maxSlider.value);
+    
+        // Impedir que os sliders se cruzem
+        if (minVal >= maxVal) {
+            minSlider.value = maxVal - 10;
+            minVal = maxVal - 10;
+        }
+    
+        if (maxVal <= minVal) {
+            maxSlider.value = minVal + 10;
+            maxVal = minVal + 10;
+        }
+    
+        // Atualizar os valores nas bolhas e nas exibições de entrada
+        bubbleMin.textContent = `$${minVal}`;
+        bubbleMax.textContent = `$${maxVal}`;
+        minValueDisplay.value = `$${minVal}`;
+        maxValueDisplay.value = `$${maxVal}`;
+    
+        // Calcular posições das bolhas com base nos valores do slider
+        const sliderWidth = minSlider.offsetWidth;
+        const minPosition = (minVal / maxSlider.max) * sliderWidth;
+        const maxPosition = (maxVal / maxSlider.max) * sliderWidth;
+    
+        bubbleMin.style.left = `calc(${minPosition}px - 10px)`;
+        bubbleMax.style.left = `calc(${maxPosition}px - 10px)`;
+    }
+</script>
+    
