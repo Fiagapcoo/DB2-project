@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .join('');
 
         if (enteredOTP === STATIC_OTP) {
-            window.location.href = '/reset-password/'; // Redirecionar para página de nova senha
+            window.location.href = '/auth/reset-password/';
         } else {
             otpError.textContent = 'Código incorreto. Por favor, tente novamente.';
             otpError.style.display = 'block';

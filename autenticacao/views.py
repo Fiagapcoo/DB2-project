@@ -28,7 +28,7 @@ def reset_password(request):
         
         if new_password != confirm_password:
             messages.error(request, 'As senhas não correspondem.')
-            return render(request, 'autenticacao/reset_password.html')
+            return render(request, 'reset_password.html')
         
         # Aqui você implementaria a lógica de atualização da senha
         messages.success(request, 'Senha atualizada com sucesso!')
