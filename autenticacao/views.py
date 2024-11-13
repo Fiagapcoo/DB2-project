@@ -1,9 +1,11 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import *
+from django.db import connection
+from encryption.encrypt_decrypt import encrypt_string
+
 # Create your views here.
 
 def index(request):
-    #check if the user is authenticated if so render the home page
     return redirect('login')
 
 
@@ -12,8 +14,18 @@ def login(request):
     return render(request, 'login.html')
 
 def register(request):
-    return render(request, 'register.html')
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = encrypt_string(request.POST.get('email'))
+        password = encrypt_string(request.POST.get('password'))
+        full_name = f"{first_name} {last_name}"
+        
 
+        with connection.cursor() as cursor:
+            cursor.execute("CALL HR.InsertUser(%s, %s, %s, %s)", [full_name, '555-1234', email, password])
+        
+    return render(request, 'register.html')
 def password_recovery(request):
     if request.method == 'POST':
         email = request.POST.get('email')
