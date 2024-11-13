@@ -3,29 +3,26 @@ document.addEventListener("DOMContentLoaded", function() {
     const successModal = document.getElementById("successModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
 
-    // Função para abrir o modal de sucesso
-    function openSuccessModal() {
-        successModal.style.display = "flex";
-    }
-
-    // Função para redirecionar para a página de login ao fechar o modal
+    // Function to redirect to login page when closing the modal
     function redirectToLogin() {
-        successModal.style.display = "none";
-        window.location.href = "{% url 'login' %}"; // Redireciona para a página de login
+        window.location.href = "{% url 'login' %}"; // Redirect to login page
     }
 
-    // Evento de envio do formulário
+    // Form submit event
     form.addEventListener("submit", function(event) {
-        event.preventDefault(); // Previne o envio imediato do formulário
+        // Remove or comment out the next line to allow form submission
+        // event.preventDefault(); // Prevent immediate form submission
 
-        // Verifica se todos os campos estão válidos de acordo com os patterns
+        // Check if all fields are valid according to patterns
         if (form.checkValidity()) {
-            openSuccessModal(); // Exibe o modal de sucesso
+            // Form is valid; allow it to submit
+            // Optionally, you can display a loading indicator here
         } else {
-            form.reportValidity(); // Mostra os erros de validação
+            event.preventDefault(); // Prevent submission if form is invalid
+            form.reportValidity(); // Show validation errors
         }
     });
 
-    // Evento para redirecionar ao clicar no botão "Fazer Login"
+    // Event to redirect when clicking the "Fazer Login" button
     closeModalBtn.addEventListener("click", redirectToLogin);
 });
