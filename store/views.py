@@ -26,3 +26,6 @@ def product_details(request):
 
 def brand_details(request):
     return render(request, 'brand_details.html')
+
+def base(request):
+    return render(request, 'base.html')

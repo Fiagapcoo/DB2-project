@@ -10,4 +10,5 @@ urlpatterns = [
     path("filter_card", views.filter_card, name="filter_card"),
     path("product_details", views.product_details, name="product_details"),
     path("brand_details", views.brand_details, name="brand_details"),
+    path("base", views.base, name="base"),
 ]
