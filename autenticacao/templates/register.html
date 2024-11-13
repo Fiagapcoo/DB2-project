@@ -18,29 +18,32 @@
             {% csrf_token %}
             <div class="form-row">
                 <div class="form-group col-md-6">
-                    <input type="text" name="first_name" placeholder="Primeiro Nome" required>
+                    <input type="text" name="first_name" placeholder="Primeiro Nome" required pattern="^[A-Za-zÀ-ÖØ-öø-ÿ]+$" title="Apenas letras são permitidas (sem números ou caracteres especiais)">
                 </div>
+                
                 <div class="form-group col-md-6">
-                    <input type="text" name="last_name" placeholder="Último Nome" required>
+                    <input type="text" name="last_name" placeholder="Último Nome" required pattern="^[A-Za-zÀ-ÖØ-öø-ÿ]+$" title="Apenas letras são permitidas (sem números ou caracteres especiais)">
                 </div>
             </div>
 
             <div class="form-group">
-                <input type="email" name="email" placeholder="Email" required>
+                <input type="email" name="email" placeholder="Email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|pt)$" title="Por favor, insira um email válido que termine em .com ou .pt (exemplo: usuario@gmail.com)">
+            </div>
+
+            <div class="form-group">
+                <input type="tel" name="phone_number" placeholder="Número de Telemóvel" required pattern="^\d{9}$" title="Por favor, insira um número de telemóvel válido com 9 dígitos">
             </div>
             
             <div class="form-group">
-                <input type="password" name="password" placeholder="Palavra-passe" required>
-                <small class="password-hint">A palavra-passe deve conter pelo menos 8 caracteres</small>
+                <input type="password" name="password" placeholder="Palavra-passe" required pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$" title="A palavra-passe deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula e um símbolo especial">
+                <small class="password-hint">A palavra-passe deve conter pelo menos 8 caracteres, incluindo uma letra maiúscula e um símbolo especial</small>
             </div>
 
-            <div class="form-group terms-group">
-                <div class="custom-checkbox">
+            <div class="form-group terms-group d-flex align-items-center">
+                <div class="custom-checkbox mr-2">
                     <input type="checkbox" id="terms" name="terms" required>
-                    <label for="terms">
-                        Li e aceito os <a href="#" class="terms-link">Termos e Condições</a>
-                    </label>
                 </div>
+                <label for="terms" class="terms-text mb-0">Li e aceito os <a href="#" class="terms-link">Termos e Condições</a></label>
             </div>
 
             <button type="submit" class="register-button">Criar Conta</button>
@@ -52,4 +55,22 @@
     </div>
     <div class="image-container"></div>
 </div>
+
+<!-- Modal OTP -->
+<div id="successModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Conta Criada com Sucesso</h2>
+        </div>
+        <div class="modal-body">
+            <p>Sua conta foi criada com sucesso! Um email de boas-vindas foi enviado para o endereço cadastrado.</p>
+            <p>Por favor, verifique seu email para mais detalhes.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="login-button">Fazer Login</button>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'autenticacao/js/register.js' %}"></script>
 {% endblock %}
