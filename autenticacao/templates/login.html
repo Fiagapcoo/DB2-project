@@ -17,7 +17,7 @@
         <form method="POST">
             {% csrf_token %}
             <div class="form-group">
-                <input type="text" name="username" placeholder="Nome de Utilizador" required>
+                <input type="email" name="email" placeholder="Email" required>
             </div>
             
             <div class="form-group">
@@ -28,7 +28,7 @@
         </form>
         
         <p class="signup-text">
-            Não tens conta criada? Vamos criar então, clica <a href="#" class="underline-link">aqui</a>
+            Não tens conta criada? Vamos criar então, clica <a href="{% url 'register' %}" class="underline-link">aqui</a>
         </p>
         
         <p class="forgot-password">

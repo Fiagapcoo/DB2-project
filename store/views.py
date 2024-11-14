@@ -1,10 +1,19 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
 from .models import *
 # Create your views here.
 
 def index(request):
-    products = Produtos.objects.all()
-    return render(request, 'store.html', {'products': products})
+    try:
+        if request.session['user_id'] and request.session['user_name']:
+            products = Produtos.objects.all()
+            print (f"ID: {request.session['user_id']}")
+            print (f"Name: {request.session['user_name']}")
+            return render(request, 'store.html', {'products': products})
+        else:
+                return redirect('login')
+    except KeyError:
+        return redirect('login')    
+    
 
 def product_card(request):
     return render(request, 'product_card.html')

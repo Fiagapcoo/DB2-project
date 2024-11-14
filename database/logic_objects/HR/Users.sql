@@ -100,3 +100,25 @@ BEGIN
     WHERE UserID = p_UserID;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION HR.can_user_login(p_email VARCHAR(65535), p_hashed_password VARCHAR(65535))
+RETURNS BOOLEAN AS $$
+DECLARE
+    db_hashed_password VARCHAR(65535);
+BEGIN
+    SELECT HashedPassword INTO db_hashed_password
+    FROM HR.Users
+    WHERE Email = p_email;
+
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF;
+
+    IF p_hashed_password = db_hashed_password THEN
+        RETURN TRUE; 
+    ELSE
+        RETURN FALSE;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;

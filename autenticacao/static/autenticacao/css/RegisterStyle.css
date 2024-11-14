@@ -5,39 +5,40 @@
     font-family: 'Arial', sans-serif;
 }
 
-
 .container {
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
     height: 100vh;
-    background: linear-gradient(145deg, #f0f0f0 50%, #000 50%);
+    width: 100vw;  
 }
 
 .content-wrapper {
     display: flex;
     width: 100%;
     height: 100vh;
-    max-width: 1400px;
     margin: 0 auto;
 }
 
-.login-container {
+.register-container {
     flex: 1;
     padding: 40px;
+    max-width: 40%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     background-color: transparent;
-    max-width: 600px;
+    background: linear-gradient(160deg, #f0f0f0 50%, #000 50%);
 }
+
 
 .image-container {
     flex: 1;
     background-image: url('../images/loginImage.png');
-    background-size: 600;
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    padding: 0;
 }
 
 .welcome-text {
@@ -76,12 +77,46 @@ input:focus {
     box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
 }
 
+.modal {
+    height: 500px;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.modal-body {
+    text-align: center;
+}
+
+.modal-body p {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+}
+
+.modal-body .login-button {
+    display: inline-block;
+    min-width: 200px;
+    margin-top: 20px;
+}
+
 .login-button {
     width: 100%;
     padding: 15px;
     background-color: #000;
     color: white;
-    border: none;
+    border: 2px solid white;
     border-radius: 8px;
     font-size: 1rem;
     cursor: pointer;
@@ -91,6 +126,41 @@ input:focus {
 
 .login-button:hover {
     background-color: #333;
+}
+
+.register-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #000;
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.register-button:hover {
+    background-color: #333;
+}
+
+.password-hint, .terms-text, .login-text {
+    color: white;
+}
+
+.terms-group {
+    display: flex;
+    align-items: center;
+}
+
+.custom-checkbox {
+    margin-right: 0.5rem;
+}
+
+.terms-text {
+    margin-bottom: 0;
 }
 
 .signup-text {
