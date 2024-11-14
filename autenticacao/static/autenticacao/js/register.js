@@ -1,28 +1,30 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const form = document.querySelector("form");
-    const successModal = document.getElementById("successModal");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-
-    // Function to redirect to login page when closing the modal
-    function redirectToLogin() {
-        window.location.href = "{% url 'login' %}"; // Redirect to login page
+$(document).ready(function() {
+    // Show modals based on data attributes
+    if ($("#successModal").data("show") === true) {
+        $("#successModal").modal('show');
     }
 
-    // Form submit event
-    form.addEventListener("submit", function(event) {
-        // Remove or comment out the next line to allow form submission
-        // event.preventDefault(); // Prevent immediate form submission
+    if ($("#errorModal").data("show") === true) {
+        $("#errorModal").modal('show');
+    }
 
-        // Check if all fields are valid according to patterns
-        if (form.checkValidity()) {
-            // Form is valid; allow it to submit
-            // Optionally, you can display a loading indicator here
-        } else {
-            event.preventDefault(); // Prevent submission if form is invalid
-            form.reportValidity(); // Show validation errors
-        }
+    // Event listener for the "Fazer Login" button in the success modal
+    $("#closeModalBtn").click(function() {
+        window.location.href = $(this).data("login-url");
     });
 
-    // Event to redirect when clicking the "Fazer Login" button
-    closeModalBtn.addEventListener("click", redirectToLogin);
+    // Event listener for the "Fechar" button in the error modal
+    $(".close-button").click(function() {
+        $("#errorModal").modal('hide');
+    });
+
+    // Form validation
+    $("form").submit(function(event) {
+        if (this.checkValidity()) {
+            // Form is valid; allow it to submit
+        } else {
+            event.preventDefault();
+            this.reportValidity();
+        }
+    });
 });

@@ -45,9 +45,8 @@ def login(request):
 
 
 def register(request):
-    print("register")
+    context = {}
     if request.method == 'POST':
-        print("register post")
         try:
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
@@ -59,12 +58,12 @@ def register(request):
             with connection.cursor() as cursor:
                 cursor.execute("CALL HR.InsertUser(%s, %s, %s, %s)", [full_name, phone_number, email, password])
 
-            messages.success(request, "Account created successfully!")
+            context['registration_success'] = True
 
         except Exception as e:
-            messages.error(request, f"Error creating account: {e}")
+            context['registration_error'] = str(e)
 
-    return render(request, 'register.html')
+    return render(request, 'register.html', context)
 
 def password_recovery(request):
     if request.method == 'POST':
