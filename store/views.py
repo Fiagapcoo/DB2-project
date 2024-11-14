@@ -24,8 +24,9 @@ def top_bar(request):
 def navbar(request):
     return render(request, 'navbar.html')
 
-def brand(request):
-    return render(request, 'brand.html')
+def brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    return render(request, 'brand.html', {'brand': brand})
 
 def filter_card(request):
     return render(request, 'filter_card.html')
@@ -41,3 +42,6 @@ def base(request):
 
 def payment_details(request):
     return render(request, 'payment_details.html')
+
+def brands_page(request):
+    return render(request, 'brands_page.html')
