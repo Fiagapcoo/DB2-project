@@ -1,8 +1,9 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import *
 from django.db import connection
-from encryption.encrypt_decrypt import encrypt_string
+from encryption.encrypt_decrypt import encrypt_string, decrypt_string
 from django.contrib import messages
+from cryptography.fernet import InvalidToken
 
 # Create your views here.
 
@@ -11,9 +12,36 @@ def index(request):
 
 
 def login(request):
-    #check if the user is authenticated if so render the home page
-    return render(request, 'login.html')
+    if request.method == 'POST':
+        input_email = request.POST.get('email')
+        input_password = request.POST.get('password')
+        
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT UserID, Name, Email, HashedPassword FROM HR.Users")
+            users = cursor.fetchall()
+            
+            for user in users:
+                try:
+                    user_id, user_name, encrypted_email, encrypted_password = user
+                    
+                    decrypted_email = decrypt_string(encrypted_email)
+                    decrypted_password = decrypt_string(encrypted_password)
+                    
+                    print(f"Decrypted Email: {decrypted_email}")
+                    print(f"Decrypted Password: {decrypted_password}")
+                    
+                    if decrypted_email == input_email and decrypted_password == input_password:
 
+                        request.session['user_id'] = user_id
+                        request.session['user_name'] = user_name
+                        return redirect('home') #go to store page
+                except InvalidToken:
+                    print("Error: Decryption failed for a user record. Skipping this record.")
+                    continue
+            
+            messages.error(request, 'Credenciais inválidas.')
+                
+    return render(request, 'login.html')
 
 
 def register(request):
