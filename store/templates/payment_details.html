@@ -3,9 +3,7 @@
 {% load static %}
 
 {% block extra_css %}
-
-<link rel="stylesheet" type="text/css"  href="{% static 'payment_details/css/payment_details.css' %}">
- 
+<link rel="stylesheet" type="text/css" href="{% static 'payment_details/css/payment_details.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -24,11 +22,8 @@
             <input type="text" placeholder="Nome da Companhia">
             
             <label>País / Região</label>
-            <select>
-                <option>Portugal</option>
-                <!-- Outras opções aqui -->
-                <option>Papua Nova Guiné</option>
-                <option>Uzebequistão</option>
+            <select id="country" name="country">
+                <option value="">Selecione o país</option>
             </select>
             
             <label>Morada</label>
@@ -71,17 +66,42 @@
         <div class="payment-options">
             <input type="radio" id="bank_transfer" name="payment" checked>
             <label for="bank_transfer"><strong>Transferência Bancária Direta</strong></label>
-            <p>Faça o seu pagamento bancário direto...</p>
+            <p class="descricao">Faça o seu pagamento bancário direto. Terá de preencher os dados de modo a garantir o sucesso na sua entrega do produto</p>
 
             <input type="radio" id="cash_on_delivery" name="payment">
-            <label for="cash_on_delivery">Pagar na Entrega</label>
+            <label for="cash_on_delivery"><strong>Pagar na Entrega</strong></label>
         </div>
 
         <!-- Política de privacidade -->
-        <p class="privacy-policy">Os seus dados pessoais serão usados... <a href="#">aqui</a></p>
+        <p class="privacy-policy">Os seus dados pessoais serão usados de maneira a garantirmos a eficiência na entrega dos produtos.
+                                     Poderá aceder às nossas políticas de privacidade clicando <a href="#">aqui</a></p>
 
         <!-- Botão de pedido -->
         <button type="submit" class="order-button">Fazer pedido</button>
     </div>
 </div>
+
+<script>
+// Função para buscar os países da API
+async function loadCountries() {
+    const response = await fetch('https://restcountries.com/v3.1/all');
+    const countries = await response.json();
+
+    const select = document.getElementById('country');
+    countries.forEach(country => {
+        const option = document.createElement('option'); 
+        
+        
+        const countryName = country.translations.por ? country.translations.por.common : country.name.common;
+        
+        option.value = country.cca2; 
+        option.textContent = countryName; 
+        select.appendChild(option); 
+    });
+}
+
+
+window.onload = loadCountries;
+</script>
+
 {% endblock %}
