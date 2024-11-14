@@ -1,0 +1,93 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.checkout-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.purchase-details, .order-summary {
+    width: 45%;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.purchase-details h2,
+.order-summary h2 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+.checkout-form label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.checkout-form input, .checkout-form select, .checkout-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.order-summary {
+    
+}
+
+.order-item, .order-subtotal, .order-total {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.total-price {
+    font-weight: bold;
+    font-size: 1.3em;
+    color: #e07a5f;
+}
+
+.payment-options {
+    margin-top: 20px;
+}
+
+.payment-options input[type="radio"] {
+    margin-right: 8px;
+}
+
+.privacy-policy {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.privacy-policy a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.privacy-policy a:hover {
+    text-decoration: underline;
+}
+
+.order-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #333;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.order-button:hover {
+    background-color: #333;
+    color: #fff;
+}

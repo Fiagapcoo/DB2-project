@@ -29,3 +29,6 @@ def brand_details(request):
 
 def base(request):
     return render(request, 'base.html')
+
+def payment_details(request):
+    return render(request, 'payment_details.html')

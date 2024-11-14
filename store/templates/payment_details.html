@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+
+<link rel="stylesheet" type="text/css"  href="{% static 'payment_details/css/payment_details.css' %}">
+ 
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <!-- Seção de detalhes de compra -->
+    <div class="purchase-details">
+        <h2>Detalhes de Compra</h2>
+        <form class="checkout-form">
+            <label>Primeiro Nome</label>
+            <input type="text" placeholder="Primeiro Nome">
+            
+            <label>Último Nome</label>
+            <input type="text" placeholder="Último Nome">
+            
+            <label>Nome da Companhia (opcional)</label>
+            <input type="text" placeholder="Nome da Companhia">
+            
+            <label>País / Região</label>
+            <select>
+                <option>Portugal</option>
+                <!-- Outras opções aqui -->
+                <option>Papua Nova Guiné</option>
+                <option>Uzebequistão</option>
+            </select>
+            
+            <label>Morada</label>
+            <input type="text" placeholder="Morada">
+            
+            <label>Cidade</label>
+            <input type="text" placeholder="Cidade">
+            
+            <label>Código-postal</label>
+            <input type="text" placeholder="Código-postal">
+            
+            <label>Número de Telemóvel</label>
+            <input type="text" placeholder="Número de Telemóvel">
+            
+            <label>Email</label>
+            <input type="email" placeholder="Email">
+            
+            <label>Informação Adicional</label>
+            <textarea placeholder="Informação Adicional"></textarea>
+        </form>
+    </div>
+
+    <!-- Seção de resumo do pedido -->
+    <div class="order-summary">
+        <h2>Produto</h2>
+        <div class="order-item">
+            <p>Guitarra &nbsp; x 1</p>
+            <span>25,000 €</span>
+        </div>
+        <div class="order-subtotal">
+            <p>Subtotal</p>
+            <span>25,000 €</span>
+        </div>
+        <div class="order-total">
+            <p>Total</p>
+            <span class="total-price">25,000 €</span>
+        </div>
+
+        <!-- Opções de pagamento -->
+        <div class="payment-options">
+            <input type="radio" id="bank_transfer" name="payment" checked>
+            <label for="bank_transfer"><strong>Transferência Bancária Direta</strong></label>
+            <p>Faça o seu pagamento bancário direto...</p>
+
+            <input type="radio" id="cash_on_delivery" name="payment">
+            <label for="cash_on_delivery">Pagar na Entrega</label>
+        </div>
+
+        <!-- Política de privacidade -->
+        <p class="privacy-policy">Os seus dados pessoais serão usados... <a href="#">aqui</a></p>
+
+        <!-- Botão de pedido -->
+        <button type="submit" class="order-button">Fazer pedido</button>
+    </div>
+</div>
+{% endblock %}
