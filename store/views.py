@@ -45,3 +45,7 @@ def payment_details(request):
 
 def brands_page(request):
     return render(request, 'brands_page.html')
+
+def logout(request):
+    request.session.flush()
+    return redirect('login')
