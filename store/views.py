@@ -1,10 +1,19 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
 from .models import *
 # Create your views here.
 
 def index(request):
-    products = Produtos.objects.all()
-    return render(request, 'store.html', {'products': products})
+    try:
+        if request.session['user_id'] and request.session['user_name']:
+            products = Produtos.objects.all()
+            print (f"ID: {request.session['user_id']}")
+            print (f"Name: {request.session['user_name']}")
+            return render(request, 'store.html', {'products': products})
+        else:
+                return redirect('login')
+    except KeyError:
+        return redirect('login')    
+    
 
 def product_card(request):
     return render(request, 'product_card.html')
@@ -15,8 +24,9 @@ def top_bar(request):
 def navbar(request):
     return render(request, 'navbar.html')
 
-def brand(request):
-    return render(request, 'brand.html')
+def brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    return render(request, 'brand.html', {'brand': brand})
 
 def filter_card(request):
     return render(request, 'filter_card.html')
@@ -29,3 +39,9 @@ def brand_details(request):
 
 def base(request):
     return render(request, 'base.html')
+
+def payment_details(request):
+    return render(request, 'payment_details.html')
+
+def brands_page(request):
+    return render(request, 'brands_page.html')

@@ -60,6 +60,7 @@
     </div>
     <div class="image-container"></div>
 </div>
+{% endblock %}
 
 <!-- Modal de Sucesso após criação da conta -->
 <div id="successModal" class="modal" style="display:none;">
@@ -89,9 +90,40 @@
         </div>
         <div class="modal-footer">
             <button onclick="closeErrorModal()" class="close-button">Fechar</button>
+<!-- Success Modal -->
+<div id="successModal" class="modal fade" tabindex="-1" role="dialog" data-show="{{ registration_success|yesno:'true,false'|lower }}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Conta Criada com Sucesso</h2>
+            </div>
+            <div class="modal-body">
+                <p>Sua conta foi criada com sucesso! Um email de boas-vindas foi enviado para o endereço cadastrado.</p>
+                <p>Por favor, verifique seu email para mais detalhes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="closeModalBtn" class="login-button" data-login-url="{% url 'login' %}">Fazer Login</button>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Error Modal -->
+<div id="errorModal" class="modal fade" tabindex="-1" role="dialog" data-show="{% if registration_error %}true{% else %}false{% endif %}">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Erro ao Criar Conta</h2>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage">{{ registration_error }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="close-button">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include your JavaScript file -->
 <script src="{% static 'autenticacao/js/register.js' %}"></script>
-{% endblock %}

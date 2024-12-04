@@ -100,10 +100,10 @@ CREATE TABLE SECURITY.User_Passwords_Dictionary (
 CREATE TABLE HR.Users (
     UserID SERIAL PRIMARY KEY,
     Name VARCHAR(100),
-    Phone VARCHAR(20),
-    Email VARCHAR(100) UNIQUE,
-    HashedPassword VARCHAR(255),
-    ProfilePic VARCHAR(255),
+    Phone VARCHAR(65535),
+    Email VARCHAR(65535) UNIQUE,
+    HashedPassword VARCHAR(65535),
+    ProfilePic VARCHAR(25655355),
     IsManager BOOLEAN DEFAULT FALSE
 );
 
