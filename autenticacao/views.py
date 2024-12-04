@@ -7,7 +7,6 @@ from encryption.encrypt_decrypt import encrypt_string, decrypt_string
 from django.contrib import messages
 from cryptography.fernet import InvalidToken
 
-
 # Create your views here.
 
 def index(request):
@@ -90,17 +89,3 @@ def reset_password(request):
     
     return render(request, 'reset_password.html')
 
-def register(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)  # Faz o login do usuário automaticamente após o registro
-            messages.success(request, 'Conta criada com sucesso!')
-            return redirect('index')  # Ou redirecione para a página inicial, caso deseje
-        else:
-            messages.error(request, 'Por favor, corrija os erros abaixo.')
-    else:
-        form = UserCreationForm()
-
-    return render(request, 'register.html', {'form': form})
