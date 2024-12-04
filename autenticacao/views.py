@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import *
 from django.db import connection
+from django.contrib.auth.forms import UserCreationForm
 from encryption.encrypt_decrypt import encrypt_string
 
 # Create your views here.
@@ -47,3 +48,18 @@ def reset_password(request):
         return redirect('login')
     
     return render(request, 'reset_password.html')
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Faz o login do usuário automaticamente após o registro
+            messages.success(request, 'Conta criada com sucesso!')
+            return redirect('index')  # Ou redirecione para a página inicial, caso deseje
+        else:
+            messages.error(request, 'Por favor, corrija os erros abaixo.')
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'register.html', {'form': form})
