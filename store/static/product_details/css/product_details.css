@@ -12,8 +12,9 @@ body {
 .product-container {
     display: flex;
     gap: 20px;
-    max-width: 100%;
+    max-width: 100%; /* Altera de uma largura fixa para usar 100% */
     margin: 50px auto;
+    padding: 0 5%; /* Adiciona padding para evitar que o conteúdo toque nas bordas */
 }
 
 /* Estilo para o container das imagens do produto */
@@ -32,7 +33,7 @@ body {
 }
 
 .thumbnail-images img {
-    width: 60px;
+    width: 80px;
     border: 2px solid #d8d2f4;
     cursor: pointer;
 }
@@ -40,8 +41,8 @@ body {
 /* Estilo da imagem principal com fundo amarelo */
 .main-image {
     position: relative;
-    width: 250px;
-    height: 300px; /* Altura ajustada para acomodar o fundo amarelo */
+    max-width: 100%;
+    height: auto; /* Altura ajustada para acomodar o fundo amarelo */
     background-color: #F9F1E7; /* Fundo amarelo */
     display: flex;
     justify-content: center;
@@ -62,11 +63,11 @@ body {
 }
 
 .product-details h1 {
-    font-size: 24px;
+    font-size: 32px;
 }
 
 .price {
-    font-size: 22px;
+    font-size: 26px;
     color: #999;
     margin: 10px 0;
 }
@@ -98,7 +99,7 @@ body {
 
 .description {
     margin-top: 10px;
-    font-size: 14px;
+    font-size: 18px;
     color: #333;
     width: 60%;
 }
@@ -111,12 +112,12 @@ body {
 }
 
 .color-options p {
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .color-circle {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     cursor: pointer;
 }
@@ -144,7 +145,7 @@ body {
 .counter-btn {
     background-color: transparent;
     border: none;
-    font-size: 24px;
+    font-size: 28px;
     cursor: pointer;
     color: #333;
     padding: 0 10px;
@@ -178,6 +179,7 @@ input[type="number"] {
     color: #000;
     cursor: pointer;
     font-weight: bold;
+    font-size: 18px;
     border-radius: 5px;
     border-color: #000;
 }

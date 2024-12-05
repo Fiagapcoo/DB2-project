@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'product_details/css/product_details.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid gx-0 vh-80">
+    <!-- Barra superior -->
+    {% include 'top_bar.html' %}
+
+    <div class="row">
+        <!-- Detalhes do Produto -->
+        <div class="col-12">
+            <div class="product-container">
+                <div class="product-images">
+                    <div class="thumbnail-images">
+                        {% for i in thumbnails %}
+                            <img src="{{ product.image_url }}" alt="Thumbnail {{ i }}" class="thumbnail">
+                        {% endfor %}
+                    </div>
+                    <div class="main-image">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                    </div>
+                </div>
+                
+                <!-- Edição do Produto -->
+                <div class="product-details">
+                    <form method="POST" action="{% url 'edit_product' product.id %}">
+                        {% csrf_token %}
+                        <!-- Nome do Produto -->
+                        <label for="name">Nome do Produto:</label>
+                        <input type="text" id="name" name="name" value="{{ product.name }}" class="form-control mb-3">
+
+                        <!-- Descrição -->
+                        <label for="description">Descrição:</label>
+                        <textarea id="description" name="description" rows="4" class="form-control mb-3">{{ product.description }}</textarea>
+
+                        <!-- Preço -->
+                        <label for="price">Preço (€):</label>
+                        <input type="number" id="price" name="price" step="0.01" value="{{ product.price }}" class="form-control mb-3">
+
+                        <!-- Cores -->
+                        <label>Cores:</label>
+                        <div class="color-options mb-3">
+                            {% for color in product.colors %}
+                                <div class="color-circle" style="background-color: {{ color }};"></div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Contador de Quantidade -->
+                        <div class="quantity-add-cart mb-3">
+                            <label for="quantity">Quantidade:</label>
+                            <div class="counter-container">
+                                <button type="button" class="counter-btn" onclick="decreaseQuantity()">-</button>
+                                <input type="number" id="quantity" name="quantity" value="1" min="1" class="counter-input">
+                                <button type="button" class="counter-btn" onclick="increaseQuantity()">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <button type="submit" class="btn btn-primary mt-3">Salvar Alterações</button>
+                        <button type="button" class="add-cart-btn mt-3" onclick="addToCart()">Adicionar ao Carrinho</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function increaseQuantity() {
+        const quantityInput = document.getElementById('quantity');
+        quantityInput.value = parseInt(quantityInput.value) + 1;
+    }
+
+    function decreaseQuantity() {
+        const quantityInput = document.getElementById('quantity');
+        if (quantityInput.value > 1) {
+            quantityInput.value = parseInt(quantityInput.value) - 1;
+        }
+    }
+
+    function addToCart() {
+        const quantity = document.getElementById('quantity').value;
+        alert(`Adicionado ao carrinho: ${quantity} unidade(s)!`);
+    }
+</script>
+{% endblock %}

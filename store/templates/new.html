@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/new.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% include 'top_bar.html' %}
+<div class="container-fluid gx-0 vh-80">
+    <div class="row">
+        <div class="col-3">
+            {% include 'filter_card.html' %}
+        </div>
+        <div class="col-9">
+            <!-- Barra vermelha -->
+            <div class="red-bar"></div>
+
+            <!-- Título "Novos Produtos" -->
+            <h2 class="new-products-title">Novos Produtos</h2>
+            {% include 'product_card.html' with products=products %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+/* Barra vermelha acima do título */
+.red-bar {
+    background-color: red;  /* Cor vermelha */
+    height: 5px;            /* Altura da barra */
+    margin: 20px auto 10px auto;  /* Margin-top adicionado, margem inferior e centralização */
+    width: 60%;             /* Barra com largura total */
+}
+
+/* Estilos para o título "Novos Produtos" */
+.new-products-title {
+    font-size: 36px;   /* Tamanho de fonte grande */
+    font-weight: bold; /* Negrito para dar ênfase */
+    margin-bottom: 20px; /* Espaço abaixo do título */
+    color: #333;       /* Cor do texto */
+    text-align: center; /* Alinhar o texto ao centro */
+}

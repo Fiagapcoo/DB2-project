@@ -1,0 +1,50 @@
+/* category.css */
+
+/* Container dos cards */
+.container .row {
+    margin-top: 20px;
+}
+
+/* Cards */
+.card {
+    width: 250px; /* Largura fixa */
+    height: 300px; /* Altura fixa */
+    margin: auto; /* Centraliza o card */
+    border: none; /* Remove borda padrão */
+    border-radius: 15px; /* Arredonda os cantos */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Adiciona sombra */
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden; /* Para bordas arredondadas */
+    background-color: #f9f9f9; /* Fundo leve */
+}
+
+/* Efeito hover nos cards */
+.card:hover {
+    transform: translateY(-5px); /* Levanta o card */
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3); /* Intensifica a sombra */
+}
+
+/* Imagem do card */
+.card-img-top {
+    height: 180px; /* Altura fixa da imagem */
+    object-fit: cover; /* Ajusta imagem para cobrir o espaço */
+    border-top-left-radius: 15px; /* Alinha com o border-radius do card */
+    border-top-right-radius: 15px;
+}
+
+/* Título do card */
+.card-body {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    height: 50px; /* Alinha com o restante da altura do card */
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}

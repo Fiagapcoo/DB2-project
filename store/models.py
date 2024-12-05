@@ -109,3 +109,17 @@ class ComprasForn(models.Model):
 
     def __str__(self):
         return f"Compra {self.id_compra}"
+    
+class Product(models.Model):
+    
+    name = models.CharField(max_length=255)
+    brand = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    stock = models.IntegerField()
+    image_url = models.URLField()
+    colors = models.JSONField(default=list)
+    sizes = models.JSONField(default=list)
+
+    def __str__(self):
+        return self.name

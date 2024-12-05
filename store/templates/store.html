@@ -1,21 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Product List</h1>
-
-    {% if products %}
-        <ul>
-            {% for product in products %}
-                <li>
-                    <strong>{{ product.nome_produto }}</strong><br>
-                    Price: ${{ product.preco }}<br>
-                    Stock: {{ product.stock }}<br>
-                    Description: {{ product.descricao|default_if_none:"No description available" }}<br>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No products available at the moment.</p>
-    {% endif %}
+    <!-- Incluindo o carrossel -->
+  {% include "carrousel.html" %}
+  
+  {% include "category.html" %}
 
 {% endblock %}
