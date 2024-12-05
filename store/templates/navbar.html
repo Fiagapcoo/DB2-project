@@ -18,11 +18,11 @@
 
         <!-- Navigation Links -->
         <ul class="nav-categories">
-            <li><a href="#">Instrumentos</a></li>
-            <li><a href="#">Acessórios</a></li>
-            <li><a href="#">Novo</a></li>
-            <li><a href="#">Descontos</a></li>
-            <li><a href="#">Destaques</a></li>
+            <li><a href="{% url 'instruments' %}">Instrumentos</a></li>
+            <li><a href="{% url 'accessories' %}">Acessórios</a></li>
+            <li><a href="{% url 'new' %}">Novo</a></li>
+            <li><a href="{% url 'discount' %}">Descontos</a></li>
+            <li><a href="{% url 'highlights' %}">Destaques</a></li>
         </ul>
 
         <!-- Icons: Cart and Profile -->

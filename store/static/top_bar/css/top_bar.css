@@ -6,15 +6,20 @@
 
 body {
     font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
 .top-bar {
-    width: 100%;
+    width: 100%; /* Ocupa toda a largura */
+    height: 5vh;
     background-color: #D9D9D9;
     display: flex;
     justify-content: center;
     padding: 5px 0;
     border-bottom: 1px solid #ccc;
+    margin: 0; /* Remove qualquer margem */
+    box-sizing: border-box; /* Garante que padding não afete a largura */
 }
 
 .nav-list {
@@ -26,6 +31,7 @@ body {
 .nav-item {
     font-size: 14px;
     font-weight: bold;
+    height: 30px;
     color: #333;
     cursor: pointer;
     padding: 5px 20px;

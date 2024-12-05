@@ -1,0 +1,65 @@
+{% load static %}
+
+<!-- Link para os arquivos CSS -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/carrousel.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/category.css' %}">
+
+<!-- Carrossel de Promoções -->
+<div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+  <!-- (Conteúdo do Carrossel aqui) -->
+</div>
+
+<!-- Cards de Categorias -->
+<div class="container my-5">
+    <h2 class="text-center mb-4">Categorias</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <div class="col">
+        <div class="card h-100">
+          <img src="/static/images/categoria_microfones.jpg" class="card-img-top" alt="Microfones">
+          <div class="card-body">
+            <h5 class="card-title">Microfones</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100">
+          <img src="/static/images/categoria_guitarras_e_baixos.jpg" class="card-img-top" alt="Guitarras e Baixos">
+          <div class="card-body">
+            <h5 class="card-title">Guitarras e Baixos</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100">
+          <img src="/static/images/categoria_bateria.jpg" class="card-img-top" alt="Bateria e Percussão">
+          <div class="card-body">
+            <h5 class="card-title">Bateria e Percussão</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100">
+          <img src="/static/images/categoria_teclados.jpg" class="card-img-top" alt="Teclados">
+          <div class="card-body">
+            <h5 class="card-title">Teclados</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100">
+          <img src="/static/images/categoria_pa.jpg" class="card-img-top" alt="Equipamentos PA">
+          <div class="card-body">
+            <h5 class="card-title">Equipamentos PA</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card h-100">
+          <img src="/static/images/categoria_acessorios.jpg" class="card-img-top" alt="Acessórios">
+          <div class="card-body">
+            <h5 class="card-title">Acessórios</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

@@ -2,34 +2,33 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #f0f0f0; /* Fundo da página */
+    padding: 10px;
 }
 
 .product-card {
     background-color: white;
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 300px;
-    /*padding: 20px;*/
+    width: 288px; /* Aumentado 20% */
     text-align: left;
     transition: transform 0.2s ease-in-out;
-    overflow: hidden; /* Certifique-se de que o conteúdo extra não "vaze" */
+    overflow: hidden;
+    transform: scale(0.9); /* Proporcional ao novo tamanho */
+    transform-origin: center;
 }
 
 .product-card:hover {
-    transform: translateY(-5px);
+    transform: scale(0.9) translateY(-5px); /* Hover também ajustado */
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .image-wrapper {
     background: radial-gradient(circle at top left, #FBFBFB, #D3D3D3);
-    padding: 20px;
+    padding: 15px;
     border-radius: 8px 8px 0px 0px;
     display: flex;
     justify-content: center;
     align-items: center;
-    /*margin-bottom: 15px;*/
 }
 
 .product-image {
@@ -39,18 +38,18 @@
 }
 
 .product-details {
-    padding: 10px 20px 20px 20px;
+    padding: 10px 15px 15px 15px;
 }
 
 .product-brand {
-    font-size: 18px;
+    font-size: 22px; /* Aumentando o tamanho do texto */
     font-weight: bold;
     margin-bottom: 5px;
     display: inline-block;
 }
 
 .product-price {
-    font-size: 18px;
+    font-size: 20px; /* Aumentando o tamanho do texto */
     color: #333;
     font-weight: bold;
     float: right;
@@ -58,21 +57,95 @@
 }
 
 .product-description {
-    font-size: 14px;
+    font-size: 20px; /* Aumentando o tamanho do texto */
     color: #777;
-    margin-bottom: 20px;
-    clear: both; /* Para garantir que o preço e o nome não sobreponham a descrição */
+    margin-bottom: 15px;
+    clear: both;
+}
+
+.product-stock {
+    font-size: 16px; /* Aumentando o tamanho do texto */
+    color: #28a745; /* Green text for in-stock */
+    margin-bottom: 10px;
 }
 
 .availability {
     display: flex;
-    gap: 10px; /* Espaço entre os itens de disponibilidade */
+    gap: 5px;
 }
 
 .availability-item {
-    font-size: 12px;
+    font-size: 13px; /* Aumentando o tamanho do texto */
     color: #666;
-    padding: 5px 10px;
+    padding: 4px 8px;
     border: 1px solid #ccc;
-    border-radius: 20px;
+    border-radius: 15px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.action-buttons .btn {
+    font-size: 16px;  /* Tamanho do texto dos botões */
+    padding: 8px 15px;  /* Aumentando o padding para dar mais espaço ao redor do texto */
+    border-radius: 5px;
+    text-align: center;
+    width: 30%; /* Os botões ainda compartilham o mesmo espaço */
+    display: flex;  /* Torna os botões flexíveis */
+    justify-content: center;  /* Centraliza o texto no eixo X */
+    align-items: center;  /* Centraliza o texto no eixo Y */
+    height: 100%;  /* Garantir que o botão tenha altura suficiente para centralizar */
+}
+
+.edit-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.edit-btn:hover {
+    background-color: #0056b3;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+}
+
+.delete-btn:hover {
+    background-color: #a71d2a;
+}
+
+.basket-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+.basket-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Container da grade de produtos */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); /* Ajustado para o novo tamanho mínimo */ 
+}
+
+/* Style for each product card */
+.card-container {
+    margin: 0;
+}
+
+/* Cartões individuais já têm estilos definidos */
+.product-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
 }

@@ -1,0 +1,29 @@
+/* Container da Sidebar */
+#sidebar-container {
+    position: fixed;
+    top: 0;
+    left: -300px; /* Começa fora da tela */
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    transition: left 0.3s ease; /* Animação de entrada/saída */
+}
+
+/* Exibir a sidebar */
+#sidebar-container.active {
+    left: 0; /* Move para dentro da tela */
+}
+
+
+/* Fechar a sidebar (ícone de menu) */
+.menu-icon {
+    cursor: pointer;
+    font-size: 24px;
+    margin-left: 10px;
+}
+
+body.active-sidebar {
+    overflow: hidden; /* Desativar rolagem ao abrir a sidebar */
+}

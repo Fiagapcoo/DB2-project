@@ -1,6 +1,8 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import *
 from django.db import connection
+from django.contrib.auth.forms import UserCreationForm
+from encryption.encrypt_decrypt import encrypt_string
 from encryption.encrypt_decrypt import encrypt_string, decrypt_string
 from django.contrib import messages
 from cryptography.fernet import InvalidToken
@@ -102,3 +104,4 @@ def reset_password(request):
         return redirect('login')
     
     return render(request, 'reset_password.html')
+
