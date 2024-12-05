@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import *
+from django.db import connection
 # Create your views here.
 
 def index(request):
@@ -45,6 +46,23 @@ def payment_details(request):
 
 def brands_page(request):
     return render(request, 'brands_page.html')
+
+def order_history(request):
+    
+    if not request.session.get('user_id'):
+        return redirect('login')
+    
+    user_id = request.session['user_id']
+    user_orders = []
+
+    with connection.cursor() as cursor:
+
+        cursor.execute("SELECT * FROM transactions.orders WHERE userid = %s;", [user_id])
+        user_orders = cursor.fetchall()
+    
+
+    context = {'user_orders': user_orders}
+    return render(request, 'order_history.html', context)
 
 def logout(request):
     request.session.flush()
