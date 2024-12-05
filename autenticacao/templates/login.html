@@ -14,20 +14,30 @@
             <p class="subtitle">Estamos contentes por te termos de volta</p>
         </div>
 
+        <!-- Bootstrap Alert for Error Messages -->
+        {% if messages %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endif %}
+
         <form method="POST">
             {% csrf_token %}
-            <div class="form-group">
-                <input type="email" name="email" placeholder="Email" required>
+            <div class="form-group mb-3">
+                <input type="email" name="email" class="form-control" placeholder="Email" required>
             </div>
             
-            <div class="form-group">
-                <input type="password" name="password" placeholder="Palavra-passe" required>
+            <div class="form-group mb-3">
+                <input type="password" name="password" class="form-control" placeholder="Palavra-passe" required>
             </div>
 
             <button type="submit" class="login-button">Login</button>
         </form>
         
-        <p class="signup-text">
+        <p class="signup-text mt-3">
             Não tens conta criada? Vamos criar então, clica <a href="{% url 'register' %}" class="underline-link">aqui</a>
         </p>
         

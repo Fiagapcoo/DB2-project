@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, HttpResponse, redirect
 from .models import *
+from django.db import connection
 from .mock_data import PRODUCTS
-
 
 # Create your views here.
 
@@ -83,3 +83,44 @@ def edit_product(request, product_id):
     thumbnails = range(4)  # Gera uma lista de números [0, 1, 2, 3].
     return render(request, 'edit_product.html', {'product': product, 'thumbnails': thumbnails})
 
+  def order_history(request):
+    
+    if not request.session.get('user_id'):
+        return redirect('login')
+    
+    user_id = request.session['user_id']
+    user_orders = []
+
+    with connection.cursor() as cursor:
+
+        cursor.execute("SELECT * FROM transactions.orders WHERE userid = %s;", [user_id])
+        user_orders = cursor.fetchall()
+    
+
+    context = {'user_orders': user_orders}
+    return render(request, 'order_history.html', context)
+
+def logout(request):
+    request.session.flush()
+    return redirect('login')
+
+  def order_history(request):
+    
+    if not request.session.get('user_id'):
+        return redirect('login')
+    
+    user_id = request.session['user_id']
+    user_orders = []
+
+    with connection.cursor() as cursor:
+
+        cursor.execute("SELECT * FROM transactions.orders WHERE userid = %s;", [user_id])
+        user_orders = cursor.fetchall()
+    
+
+    context = {'user_orders': user_orders}
+    return render(request, 'order_history.html', context)
+
+def logout(request):
+    request.session.flush()
+    return redirect('login')

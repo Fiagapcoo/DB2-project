@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="text-center">Histórico de Vendas</h1>
+
+        {% if user_orders %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover mt-4">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID do Pedido</th>
+                            <th>ID do Usuário</th>
+                            <th>Código da Transação</th>
+                            <th>Status</th>
+                            <th>Conteúdo do Carrinho</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in user_orders %}
+                            <tr>
+                                <td>{{ order.0 }}</td>
+                                <td>{{ order.1 }}</td>
+                                <td>{{ order.2 }}</td>
+                                <td>{{ order.3 }}</td>
+                                <td>{{ order.4 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-center text-muted">Não há pedidos disponíveis no momento.</p>
+        {% endif %}
+    </div>
+{% endblock %}

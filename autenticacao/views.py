@@ -14,35 +14,51 @@ def index(request):
 
 
 def login(request):
+    if request.session.get('user_id'):
+        return redirect('http://127.0.0.1:8000')
+    
     if request.method == 'POST':
         input_email = request.POST.get('email')
         input_password = request.POST.get('password')
-        
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT UserID, Name, Email, HashedPassword FROM HR.Users")
-            users = cursor.fetchall()
-            
-            for user in users:
-                try:
-                    user_id, user_name, encrypted_email, encrypted_password = user
-                    
-                    decrypted_email = decrypt_string(encrypted_email)
-                    decrypted_password = decrypt_string(encrypted_password)
-                    
-                    print(f"Decrypted Email: {decrypted_email}")
-                    print(f"Decrypted Password: {decrypted_password}")
-                    
-                    if decrypted_email == input_email and decrypted_password == input_password:
 
-                        request.session['user_id'] = user_id
-                        request.session['user_name'] = user_name
-                        return redirect('home') #go to store page
-                except InvalidToken:
-                    print("Error: Decryption failed for a user record. Skipping this record.")
-                    continue
-            
-            messages.error(request, 'Credenciais inválidas.')
-                
+        if not input_email or not input_password:
+            messages.error(request, 'Por favor, preencha todos os campos.')
+            return render(request, 'login.html')
+
+        try:
+            with connection.cursor() as cursor:
+                # Use parameterized queries to prevent SQL injection
+                cursor.execute(
+                    "SELECT UserID, Name, Email, HashedPassword FROM HR.Users WHERE Email = %s",
+                    [input_email]
+                )
+                user = cursor.fetchone()
+
+            if user is None:
+                messages.error(request, 'Credenciais inválidas.')
+                return render(request, 'login.html')
+
+            user_id, name, email, hashed_password = user
+
+            try:
+                # Decrypt and check the password
+                decrypted_password = decrypt_string(hashed_password)
+                if input_password == decrypted_password:
+                    # Store user details in the session
+                    request.session['user_id'] = user_id
+                    request.session['user_name'] = name
+                    request.session['user_email'] = email
+                    return redirect('index')
+
+            except InvalidToken:
+                messages.error(request, 'Ocorreu um erro ao processar as suas credenciais.')
+
+        except Exception as e:
+            # Log exception and notify the user (ensure to log securely in production)
+            print(f"Error during login: {e}")
+            messages.error(request, 'Erro interno. Por favor, tente novamente mais tarde.')
+
+
     return render(request, 'login.html')
 
 
@@ -52,9 +68,9 @@ def register(request):
         try:
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
-            email = encrypt_string(request.POST.get('email'))
+            email = request.POST.get('email')
             password = encrypt_string(request.POST.get('password'))
-            phone_number = encrypt_string(request.POST.get('phone_number'))
+            phone_number = request.POST.get('phone_number')
             full_name = f"{first_name} {last_name}"
 
             with connection.cursor() as cursor:
