@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <!-- Incluindo o carrossel -->
-  {% include "carrousel.html" %}
-  
-  {% include "category.html" %}
-
+    <!-- Including the carousel -->
+    {% include "carrousel.html" %}
+    
+    <!-- Pass the categories to the included template -->
+    {% include "category.html" with categories=categories %}
 {% endblock %}

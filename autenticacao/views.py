@@ -15,7 +15,7 @@ def index(request):
 
 def login(request):
     if request.session.get('user_id'):
-        return redirect('http://127.0.0.1:8000')
+        return redirect('http://127.0.0.1:8000/store')
     
     if request.method == 'POST':
         input_email = request.POST.get('email')

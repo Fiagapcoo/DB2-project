@@ -3,20 +3,33 @@ from .models import *
 from django.db import connection
 from .mock_data import PRODUCTS
 
-# Create your views here.
-
 def index(request):
     try:
-        if request.session['user_id'] and request.session['user_name']:
-            products = Produtos.objects.all()
-            print (f"ID: {request.session['user_id']}")
-            print (f"Name: {request.session['user_name']}")
-            return render(request, 'store.html', {'products': products})
+        # Check if user is authenticated
+        if request.session.get('user_id') and request.session.get('user_name'):
+
+            categories = []
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM static_content.categories")
+                columns = [col[0] for col in cursor.description]
+                rows = cursor.fetchall()
+                categories = [dict(zip(columns, row)) for row in rows]
+            context = {
+                #'products': products,
+                'categories': categories,
+            }
+            
+            return render(request, 'store.html', context)
         else:
-                return redirect('login')
-    except KeyError:
-        return redirect('login')    
-    
+            return redirect('login')
+            
+    except KeyError as e:
+        print(f"Session key error: {str(e)}")
+        return redirect('login')
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        # You might want to redirect to an error page in production
+        return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 def product_card(request):
     return render(request, 'product_card.html')
@@ -83,7 +96,7 @@ def edit_product(request, product_id):
     thumbnails = range(4)  # Gera uma lista de números [0, 1, 2, 3].
     return render(request, 'edit_product.html', {'product': product, 'thumbnails': thumbnails})
 
-  def order_history(request):
+def order_history(request):
     
     if not request.session.get('user_id'):
         return redirect('login')
@@ -104,7 +117,7 @@ def logout(request):
     request.session.flush()
     return redirect('login')
 
-  def order_history(request):
+def order_history(request):
     
     if not request.session.get('user_id'):
         return redirect('login')

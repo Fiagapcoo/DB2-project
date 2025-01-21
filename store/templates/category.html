@@ -13,53 +13,30 @@
 <div class="container my-5">
     <h2 class="text-center mb-4">Categorias</h2>
     <div class="row row-cols-1 row-cols-md-3 g-4">
-      <div class="col">
-        <div class="card h-100">
-          <img src="/static/images/categoria_microfones.jpg" class="card-img-top" alt="Microfones">
-          <div class="card-body">
-            <h5 class="card-title">Microfones</h5>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100">
-          <img src="/static/images/categoria_guitarras_e_baixos.jpg" class="card-img-top" alt="Guitarras e Baixos">
-          <div class="card-body">
-            <h5 class="card-title">Guitarras e Baixos</h5>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100">
-          <img src="/static/images/categoria_bateria.jpg" class="card-img-top" alt="Bateria e Percussão">
-          <div class="card-body">
-            <h5 class="card-title">Bateria e Percussão</h5>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100">
-          <img src="/static/images/categoria_teclados.jpg" class="card-img-top" alt="Teclados">
-          <div class="card-body">
-            <h5 class="card-title">Teclados</h5>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100">
-          <img src="/static/images/categoria_pa.jpg" class="card-img-top" alt="Equipamentos PA">
-          <div class="card-body">
-            <h5 class="card-title">Equipamentos PA</h5>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100">
-          <img src="/static/images/categoria_acessorios.jpg" class="card-img-top" alt="Acessórios">
-          <div class="card-body">
-            <h5 class="card-title">Acessórios</h5>
-          </div>
-        </div>
-      </div>
+        {% for category in categories %}
+            <div class="col">
+                {% comment %} <a href="{% url 'category_detail' category.id %}" class="text-decoration-none"> {% endcomment %}
+                  <div class="card h-100">
+                    {% if category.preview_img %}
+                        <img src="{{ category.preview_img }}" class="card-img-top" alt="{{ category.name }}">
+                    {% else %}
+                        <img src="{% static 'images/default_category.jpg' %}" class="card-img-top" alt="{{ category.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title text-dark">{{ category.name }}</h5>
+                        {% if category.description %}
+                            <p class="card-text text-secondary">{{ category.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% comment %} </a> {% endcomment %}
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    Nenhuma categoria encontrada.
+                </div>
+            </div>
+        {% endfor %}
     </div>
 </div>
