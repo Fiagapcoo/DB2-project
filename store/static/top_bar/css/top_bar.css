@@ -44,3 +44,7 @@ body {
     background-color: rgb(86, 1, 86);
     border-radius: 10px;
 }
+
+a{
+    text-decoration: none !important;
+}

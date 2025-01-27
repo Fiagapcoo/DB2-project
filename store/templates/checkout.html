@@ -1,0 +1,149 @@
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'checkout/css/checkout.css' %}">
+<style>
+    .payment-options {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+    }
+    .payment-tab {
+        cursor: pointer;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .payment-tab.active {
+        background-color: #f0f0f0;
+    }
+    .payment-content {
+        display: none;
+    }
+    .payment-content.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container checkout-container">
+    <div class="row">
+        <div class="col-md-6 product-details">
+            <h2>{{ product.name }}</h2>
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid">
+            <p>Price: €{{ product.discountedprice }}</p>
+            <p>Description: {{ product.description }}</p>
+        </div>
+        <div class="col-md-6 payment-section">
+            <div class="payment-options">
+                <div class="payment-tab active" data-target="card-payment">Card Payment</div>
+                <div class="payment-tab" data-target="mbway-payment">MBWAY</div>
+            </div>
+
+            <div id="card-payment" class="payment-content active">
+                <form id="card-payment-form">
+                    <div id="card-element" class="form-control">
+                        <!-- Stripe Elements Placeholder -->
+                    </div>
+                    <button id="card-submit" class="btn btn-primary mt-3">
+                        Pay €{{ product.discountedprice }} with Card
+                    </button>
+                    <div id="card-errors" role="alert" class="text-danger"></div>
+                </form>
+            </div>
+
+            <div id="mbway-payment" class="payment-content">
+                <form id="mbway-payment-form">
+                    <div class="form-group">
+                        <label for="phone-number">MBWAY Phone Number</label>
+                        <input type="tel" id="phone-number" class="form-control" placeholder="Enter MBWAY phone number" required>
+                    </div>
+                    <button id="mbway-submit" class="btn btn-success mt-3">
+                        Pay €{{ product.discountedprice }} with MBWAY
+                    </button>
+                    <div id="mbway-errors" role="alert" class="text-danger"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Payment Tab Switching
+    document.querySelectorAll('.payment-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.payment-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.payment-content').forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding content
+            this.classList.add('active');
+            document.getElementById(this.dataset.target).classList.add('active');
+        });
+    });
+
+    // Stripe Card Payment
+    var stripe = Stripe('{{ pk_live_51Naz85BFwuyFA93j5E2NAH3yN4aTkOtzrgNnYouM7obqWxqlaxClzFTdeDNMu60WYdMmTaR2HhQiyoxrMImzoIEh000sJkuBWZ }}');
+    var elements = stripe.elements();
+    var cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
+    var cardForm = document.getElementById('card-payment-form');
+    cardForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        stripe.createPaymentMethod({
+            type: 'card',
+            card: cardElement,
+            billing_details: {
+                name: '{{ product.name }}'
+            }
+        }).then(function(result) {
+            if (result.error) {
+                var errorElement = document.getElementById('card-errors');
+                errorElement.textContent = result.error.message;
+            } else {
+                // Process card payment
+                processPayment(result.paymentMethod.id, 'card');
+            }
+        });
+    });
+
+    // MBWAY Payment
+    document.getElementById('mbway-payment-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var phoneNumber = document.getElementById('phone-number').value;
+        
+        // Here you would typically integrate with MBWAY API
+        // This is a placeholder implementation
+        processPayment(phoneNumber, 'mbway');
+    });
+
+    function processPayment(paymentId, method) {
+        fetch('/process-payment/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                payment_method_id: paymentId,
+                payment_method: method,
+                product_id: {{ product.productid }},
+                amount: {{ product.discountedprice }}
+            })
+        }).then(function(response) {
+            return response.json();
+        }).then(function(paymentResult) {
+            if (paymentResult.status === 'succeeded') {
+                window.location.href = '/payment-success/';
+            } else {
+                console.error('Payment failed');
+                document.getElementById(method + '-errors').textContent = 'Payment failed. Please try again.';
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -15,7 +15,6 @@ def index(request):
                 rows = cursor.fetchall()
                 categories = [dict(zip(columns, row)) for row in rows]
             context = {
-                #'products': products,
                 'categories': categories,
             }
             
@@ -35,7 +34,13 @@ def product_card(request):
     return render(request, 'product_card.html')
 
 def instruments(request):
-    return render(request, 'instruments.html')
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."ProductType" = \'instrument\'')
+        columns = [col[0] for col in cursor.description]
+        instruments = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    context = {'instruments': instruments}
+    return render(request, 'instruments.html', context)
 
 def store(request):
     return render(request, 'store.html')
@@ -69,13 +74,20 @@ def brands_page(request):
     return render(request, 'brands_page.html')
 
 def new(request):
+    
     return render(request, 'new.html', {'products': PRODUCTS})
 
 def highlights(request):
     return render(request, 'highlights.html')
 
 def accessories(request):
-    return render(request, 'accessories.html')
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."ProductType" = \'accessories\'')
+        columns = [col[0] for col in cursor.description]
+        accessories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    context = {'accessories': accessories}
+    return render(request, 'accessories.html', context)
 
 def discount(request):
     return render(request, 'discount.html')
@@ -137,3 +149,58 @@ def order_history(request):
 def logout(request):
     request.session.flush()
     return redirect('login')
+
+
+def checkout(request, product_id):
+   with connection.cursor() as cursor:
+       cursor.execute('SELECT * FROM dynamic_content.products WHERE "productid" = %s', [product_id])
+       columns = [col[0] for col in cursor.description]
+       product = dict(zip(columns, cursor.fetchone()))
+   
+   context = {'product': product}
+   return render(request, 'checkout.html', context)
+
+def cart(request):
+    # Example cart data
+    cart_items = [
+        {"name": "Guitarra Elétrica", "quantity": 1, "unit_price": 500.00, "total_price": 500.00},
+        {"name": "Pedal de Efeitos", "quantity": 2, "unit_price": 150.00, "total_price": 300.00},
+    ]
+    cart_subtotal = sum(item["total_price"] for item in cart_items)
+    cart_tax = cart_subtotal * 0.23  # Example: 23% tax
+    cart_total = cart_subtotal + cart_tax
+
+    return render(request, "cart.html", {
+        "cart_items": cart_items,
+        "cart_subtotal": cart_subtotal,
+        "cart_tax": cart_tax,
+        "cart_total": cart_total,
+    })
+    
+# views.py
+from django.shortcuts import render
+from django.db import connection
+
+def category_detail(request, id):
+    with connection.cursor() as cursor:
+        # Get products with stock information
+        cursor.execute('''
+            SELECT * FROM dynamic_content.products p 
+            JOIN dynamic_content.stock s ON s.productid = p.productid 
+            WHERE p.categoryid = %s
+        ''', [id])
+        columns = [col[0] for col in cursor.description]
+        products = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        # Get category name
+        cursor.execute('''
+            SELECT name FROM static_content.categories c 
+            WHERE categoryid = %s
+        ''', [id])
+        category_name = cursor.fetchone()
+        
+    context = {
+        'products': products, 
+        'category_name': category_name[0] if category_name else ''
+    }
+    return render(request, 'category_detail.html', context)

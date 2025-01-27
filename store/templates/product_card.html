@@ -2,41 +2,51 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'product_card/css/product_card.css' %}">
+<style>
+    .no-products-message {
+        text-align: center;
+        padding: 2rem;
+        margin: 2rem auto;
+        max-width: 600px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="products-grid">
-    {% for product in products %}
-    <div class="card-container">
-        <div class="product-card">
-            <div class="image-wrapper">
-                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
-            </div>
-            <div class="product-details">
-                <h2 class="product-brand">{{ product.brand }}</h2>
-                <p class="product-price">{{ product.price }}</p>
-                <p class="product-description">{{ product.description }}</p>
-                {% if product.stock > 0 %}
-                    <p class="product-stock text-success">Em stock: {{ product.stock }}</p>
-                {% else %}
-                    <p class="product-stock text-danger">Sem Stock</p>
-                {% endif %}
-                
-                <!--
-                <div class="availability">
-                    <span class="availability-item">{{ product.colors|length }} Cores Disponiveis</span>
-                    <span class="availability-item">{{ product.sizes|length }} Disponiveis</span>
+    {% if products %}
+        {% for product in products %}
+        <div class="card-container">
+            <div class="product-card">
+                <div class="image-wrapper">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
                 </div>
-                -->
+                <div class="product-details">
+                    <h2 class="product-brand">{{ product.brand }}</h2>
+                    <p class="product-price">{{ product.price }}</p>
+                    <p class="product-description">{{ product.description }}</p>
+                    {% if product.quantity > 0 %}
+                        <p class="product-stock text-success">Em stock: {{ product.quantity }}</p>
+                    {% else %}
+                        <p class="product-stock text-danger">Sem Stock</p>
+                    {% endif %}
 
-                <div class="action-buttons">
-                    <a href="{% url 'edit_product' product.id %}" class="btn btn-primary edit-btn">Editar</a>
-                    <a href="{% url 'delete_product' product.id %}" class="btn btn-danger delete-btn">Remover</a>
-                    <a href="{% url 'add_to_basket' product.id %}" class="btn btn-secondary basket-btn">Adicionar</a>
+                    <div class="action-buttons">
+                        <a href="" class="btn btn-secondary basket-btn">Adicionar</a>
+                        <a href="{% url 'checkout' product.productid %}" class="btn btn-secondary basket-btn">Comprar Agora</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    {% endfor %}
+        {% endfor %}
+    {% else %}
+        <div class="no-products-message">
+            <h3>Sem produtos disponíveis</h3>
+            <p>De momento não existem produtos nesta categoria.</p>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
