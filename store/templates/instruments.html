@@ -2,7 +2,7 @@
 
 {% block content %}
   
-{% include 'top_bar.html' %}
+{% include 'top_bar.html' with categories=categories %}
 {% include "product_card.html" with products=instruments %}
 
 {% endblock %}

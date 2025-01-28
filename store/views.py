@@ -38,15 +38,25 @@ def instruments(request):
         cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."ProductType" = \'instrument\'')
         columns = [col[0] for col in cursor.description]
         instruments = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.execute('SELECT * FROM static_content.categories')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
-    context = {'instruments': instruments}
+    context = {'instruments': instruments, 'categories': categories}
     return render(request, 'instruments.html', context)
 
 def store(request):
     return render(request, 'store.html')
 
 def top_bar(request):
-    return render(request, 'top_bar.html')
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM static_content.categories')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    context = {'categories': categories}
+    print(categories)
+    return render(request, 'top_bar.html', context)
 
 def navbar(request):
     return render(request, 'navbar.html')
@@ -199,8 +209,30 @@ def category_detail(request, id):
         ''', [id])
         category_name = cursor.fetchone()
         
+        cursor.execute('SELECT * FROM static_content.categories')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
     context = {
         'products': products, 
-        'category_name': category_name[0] if category_name else ''
+        'category_name': category_name[0] if category_name else '',
+        'categories': categories
     }
     return render(request, 'category_detail.html', context)
+
+def product_detail(request, id):
+    with connection.cursor() as cursor:
+        cursor.execute('''
+            SELECT * FROM dynamic_content.products p 
+            JOIN dynamic_content.stock s ON s.productid = p.productid 
+            WHERE p.productid = %s
+        ''', [id])
+        columns = [col[0] for col in cursor.description]
+        product = dict(zip(columns, cursor.fetchone()))
+        
+        cursor.execute('SELECT * FROM static_content.categories')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+    context = {'product': product, 'categories': categories}
+    return render(request, 'product_detail.html', context)

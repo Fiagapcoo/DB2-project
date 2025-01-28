@@ -7,11 +7,15 @@
 {% block top_bar %}
 <div class="top-bar">
     <ul class="nav-list">
-        <a href="/bateria-percussao"><li class="nav-item">Bateria e Percussão</li></a>
-        <a href="/microfones"><li class="nav-item">Microfones</li></a>
-        <a href="/guitarras-baixos"><li class="nav-item">Guitarras e Baixos</li></a>
-        <a href="/teclados"><li class="nav-item">Teclados</li></a>
-        <a href="/equipamentos-pa"><li class="nav-item">Equipamentos PA</li></a>
+        {% for category in categories %}
+        <li class="nav-item">
+            <a href="{% url 'category_detail' category.categoryid %}" class="nav-link">
+                {{ category.name }}
+            </a>
+        </li>
+        {% endfor %}
     </ul>
 </div>
+
+{% comment %} {% url 'category_detail' category.categoryid %} {% endcomment %}
 {% endblock %}

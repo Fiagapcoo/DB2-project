@@ -19,6 +19,7 @@
 <div class="products-grid">
     {% if products %}
         {% for product in products %}
+        <a href = "{% url 'product_detail' product.productid %}">
         <div class="card-container">
             <div class="product-card">
                 <div class="image-wrapper">

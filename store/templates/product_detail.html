@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include 'top_bar.html' with categories=categories %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .product-img {
+            max-width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .thumb-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .price {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: red;
+            margin-right: 10px;
+        }
+        .btn-add-cart {
+            background-color: black;
+            color: white;
+            font-weight: bold;
+        }
+        .rating {
+            color: gold;
+        }
+        .stock-status {
+            font-weight: bold;
+        }
+        .in-stock {
+            color: #198754;  /* Bootstrap success color */
+        }
+        .out-of-stock {
+            color: #dc3545;  /* Bootstrap danger color */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{product.image_url}}" target="_blank">
+                    <img src="{{product.image_url}}" alt="Product Image" class="product-img">
+                </a>
+            </div>
+            <div class="col-md-6">
+                <h2>{{product.name}}</h2>
+                <p><strong>Brand:</strong> Harley Benton</p>
+                <div class="rating">★★★★★</div>
+                <p class="price mt-3">
+                    {% if product.discountedprice %}
+                    <span class="original-price" id="original-price">€{{product.baseprice}}</span>
+                    <span id="discounted-price">€{{product.discountedprice}}</span>
+                    {% else %}
+                    <span id="original-price">€{{product.baseprice}}</span>
+                    {% endif %}
+                </p>
+                <p>IVA incluído, €9,90 de portes de envio adicionais</p>
+                
+                {% if product.quantity > 0 %}
+                    <p class="stock-status in-stock">Em stock</p>
+                {% else %}
+                    <p class="stock-status out-of-stock">Sem stock</p>
+                {% endif %}
+                
+                <p>Entrega até aprox. <strong>Segunda, 3.02</strong></p>
+                <button class="btn btn-add-cart w-100 p-2" {% if product.quantity <= 0 %}disabled{% endif %}>
+                    ADICIONAR AO CARRINHO
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}
