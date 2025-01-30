@@ -1,14 +1,7 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block content %}
-{% include 'top_bar.html' with categories=categories %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Page</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% block extra_css %}
     <style>
         .product-img {
             max-width: 100%;
@@ -32,9 +25,9 @@
             margin-right: 10px;
         }
         .btn-add-cart {
-            background-color: black;
-            color: white;
-            font-weight: bold;
+            background-color: black !important;
+            color: white !important;
+            font-weight: bold !important;
         }
         .rating {
             color: gold;
@@ -49,43 +42,90 @@
             color: #dc3545;  /* Bootstrap danger color */
         }
     </style>
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-6">
-                <a href="{{product.image_url}}" target="_blank">
-                    <img src="{{product.image_url}}" alt="Product Image" class="product-img">
-                </a>
-            </div>
-            <div class="col-md-6">
-                <h2>{{product.name}}</h2>
-                <p><strong>Brand:</strong> Harley Benton</p>
-                <div class="rating">★★★★★</div>
-                <p class="price mt-3">
-                    {% if product.discountedprice %}
-                    <span class="original-price" id="original-price">€{{product.baseprice}}</span>
-                    <span id="discounted-price">€{{product.discountedprice}}</span>
-                    {% else %}
-                    <span id="original-price">€{{product.baseprice}}</span>
-                    {% endif %}
-                </p>
-                <p>IVA incluído, €9,90 de portes de envio adicionais</p>
-                
-                {% if product.quantity > 0 %}
-                    <p class="stock-status in-stock">Em stock</p>
+{% endblock %}
+
+{% block content %}
+{% include 'top_bar.html' with categories=categories %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 product-images">
+            <a href="{{ product.image_url }}" target="_blank">
+                <div class="main-image">
+                    <img src="{{ product.image_url }}" alt="Product Image">
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 product-details">
+            <h2>{{ product.name }}</h2>
+            <p><strong>Brand:</strong> Harley Benton</p>
+            <div class="rating">★★★★★</div>
+
+            <p class="price mt-3">
+                {% if product.discountedprice %}
+                    <span class="original-price">€{{ product.baseprice }}</span>
+                    <span id="discounted-price">€{{ product.discountedprice }}</span>
                 {% else %}
-                    <p class="stock-status out-of-stock">Sem stock</p>
+                    <span id="original-price">€{{ product.baseprice }}</span>
                 {% endif %}
-                
-                <p>Entrega até aprox. <strong>Segunda, 3.02</strong></p>
-                <button class="btn btn-add-cart w-100 p-2" {% if product.quantity <= 0 %}disabled{% endif %}>
-                    ADICIONAR AO CARRINHO
-                </button>
-            </div>
+            </p>
+
+            <p>IVA incluído, €9,90 de portes de envio adicionais</p>
+
+            {% if product.quantity > 0 %}
+                <p class="stock-status in-stock">Em stock</p>
+            {% else %}
+                <p class="stock-status out-of-stock">Sem stock</p>
+            {% endif %}
+
+            <p>Entrega até aprox. <strong>Segunda, 3.02</strong></p>
+
+            <button class="btn btn-add-cart w-100 p-2 add-to-cart" data-id="{{ product.productid }}"
+                    {% if product.quantity <= 0 %}disabled{% endif %}>
+                ADICIONAR AO CARRINHO
+            </button>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            let productId = this.getAttribute('data-id');
+            let url = `/add-to-cart/${productId}/`;
+
+            console.log(`Botão clicado! Enviando requisição para: ${url}`);
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Resposta da API:", data);
+                alert('Produto adicionado ao carrinho! 🛒');
+
+                let cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement) {
+                    cartCountElement.innerText = data.cart.split(',').length;
+                }
+            })
+            .catch(error => console.error('Erro ao adicionar ao carrinho:', error));
+        });
+    });
+});
+</script>
 {% endblock %}

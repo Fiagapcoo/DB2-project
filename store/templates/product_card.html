@@ -22,9 +22,9 @@
 <div class="products-grid">
     {% if products %}
         {% for product in products %}
-        <a href = "{% url 'product_detail' product.productid %}">
         <div class="card-container">
-            <div class="product-card">
+            <!-- AQUI: Tornamos toda a div clicável para abrir o produto -->
+            <div class="product-card" data-url="{% url 'product_detail' product.productid %}">
                 <div class="image-wrapper">
                     <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
                 </div>
@@ -32,6 +32,7 @@
                     <h2 class="product-brand">{{ product.brand }}</h2>
                     <p class="product-price">{{ product.price }}</p>
                     <p class="product-description">{{ product.description }}</p>
+                    
                     {% if product.quantity > 0 %}
                         <p class="product-stock text-success">Em stock: {{ product.quantity }}</p>
                     {% else %}
@@ -39,8 +40,17 @@
                     {% endif %}
 
                     <div class="action-buttons">
-                        <a href="{% url 'add_to_cart' product.productid %}" class="btn btn-secondary basket-btn">Adicionar</a>
-                        <a href="{% url 'checkout' product.productid %}" class="btn btn-secondary basket-btn">Comprar Agora</a>
+                        <!-- Adicionamos event.stopPropagation() para evitar abrir a página do produto -->
+                        <button class="btn btn-secondary basket-btn add-to-cart" 
+                                data-id="{{ product.productid }}" 
+                                onclick="event.stopPropagation();">
+                            Adicionar
+                        </button>
+                        <a href="{% url 'checkout' product.productid %}" 
+                           class="btn btn-secondary basket-btn" 
+                           onclick="event.stopPropagation();">
+                            Comprar Agora
+                        </a>
                     </div>
                 </div>
             </div>
@@ -54,3 +64,48 @@
     {% endif %}
 </div>
 {% endblock %}
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                let productId = this.getAttribute('data-id');
+                let url = `/add-to-cart/${productId}/`; // Corrigida para coincidir com `urls.py`
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest' // Indica que é uma requisição AJAX
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => console.error('Erro ao adicionar ao carrinho:', error));
+            });
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', function() {
+                let productUrl = this.getAttribute('data-url');
+                window.location.href = productUrl;
+            });
+        });
+    });
+    </script>
+    
+    
+    
