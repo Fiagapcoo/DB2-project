@@ -3,6 +3,7 @@ from .models import *
 from django.db import connection
 from .mock_data import PRODUCTS
 from django.http import JsonResponse
+import urllib.parse
 
 def index(request):
     try:
@@ -252,3 +253,60 @@ def add_to_cart(request, id):
 
 def admin(request):
     return render(request, 'admin.html')
+
+from django.http import JsonResponse
+from django.db import connection
+
+def get_cart_items(request):
+    product_ids = request.GET.get('ids', '')
+
+    if not product_ids:
+        return JsonResponse({"products": []})
+
+    # 🔹 Decodifica a URL corretamente e substitui "\054" por ","
+    product_ids = urllib.parse.unquote(product_ids).replace('\\054', ',')
+    product_ids = [id.strip('"') for id in product_ids.split(',') if id.strip('"').isdigit()]  # Remover aspas extras
+
+    if not product_ids:
+        return JsonResponse({"products": []})
+
+    placeholders = ','.join(['%s'] * len(product_ids))
+
+    with connection.cursor() as cursor:
+        cursor.execute(f'''
+            SELECT 
+                p.productid, 
+                p.name, 
+                COALESCE(p.discountedprice, p.baseprice) AS final_price, 
+                p.image_url, 
+                s.quantity
+            FROM dynamic_content.products p 
+            JOIN dynamic_content.stock s ON s.productid = p.productid 
+            WHERE p.productid IN ({placeholders})
+        ''', product_ids)
+
+        columns = [col[0] for col in cursor.description]
+        products = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    return JsonResponse({"products": products})
+
+def remove_from_cart(request, id):
+    if not id:
+        return JsonResponse({'error': 'ID do produto inválido'}, status=400)
+
+    cart = request.COOKIES.get('cart', '')
+
+    if not cart:
+        return JsonResponse({'message': 'Carrinho já está vazio', 'cart': ''})
+
+    cart = cart.split(',')
+
+    if str(id) in cart:
+        cart.remove(str(id))
+
+    new_cart = ','.join(cart)
+
+    response = JsonResponse({'message': 'Produto removido do carrinho', 'cart': new_cart})
+    response.set_cookie('cart', new_cart, path='/', max_age=31536000)  
+
+    return response

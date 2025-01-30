@@ -29,6 +29,8 @@ urlpatterns = [
     path('add-to-cart/<int:id>/', views.add_to_cart, name='add_to_cart'),
     path('category_detail/<int:id>/', views.category_detail, name='category_detail'),
     path('product_detail/<int:id>/', views.product_detail, name='product_detail'),
+    path('get-cart-items/', views.get_cart_items, name='get_cart_items'),
+    path('remove-from-cart/<int:id>/', views.remove_from_cart, name='remove_from_cart'),
     
     
     ##ADMIN URLS
