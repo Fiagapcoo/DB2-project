@@ -5,46 +5,76 @@
     margin-top: 20px;
 }
 
-/* Cards */
-.card {
-    width: 250px; /* Largura fixa */
-    height: 300px; /* Altura fixa */
-    margin: auto; /* Centraliza o card */
-    border: none; /* Remove borda padrão */
-    border-radius: 15px; /* Arredonda os cantos */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Adiciona sombra */
-    transition: transform 0.3s, box-shadow 0.3s;
-    overflow: hidden; /* Para bordas arredondadas */
-    background-color: #f9f9f9; /* Fundo leve */
+/* Estilização do card */
+.category-card {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    margin: auto;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #ffffff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Efeito hover nos cards */
-.card:hover {
-    transform: translateY(-5px); /* Levanta o card */
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3); /* Intensifica a sombra */
+/* Efeito hover moderno */
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
-/* Imagem do card */
-.card-img-top {
+/* Wrapper da imagem */
+.category-img-wrapper {
+    width: 100%;
     height: 180px; /* Altura fixa da imagem */
-    object-fit: cover; /* Ajusta imagem para cobrir o espaço */
-    border-top-left-radius: 15px; /* Alinha com o border-radius do card */
-    border-top-right-radius: 15px;
-}
-
-/* Título do card */
-.card-body {
-    text-align: center;
+    background: #f3f3f3;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 10px;
-    height: 50px; /* Alinha com o restante da altura do card */
 }
 
-.card-title {
-    font-size: 1.2rem;
+/* Ajustando a imagem sem cortes */
+.category-card .card-img-top {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Ajusta a imagem dentro do espaço SEM recortar */
+    transition: transform 0.3s ease;
+}
+
+/* Efeito hover na imagem */
+.category-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Estilização do título */
+.category-card .card-body {
+    text-align: center;
+    padding: 12px;
+    background: #fff;
+}
+
+.category-card .card-title {
+    font-size: 1.3rem;
     font-weight: bold;
     color: #333;
+    margin-bottom: 5px;
+}
+
+/* Rodapé com descrição em destaque sutil */
+.category-footer {
+    background: #f8f9fa;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.category-footer .card-text {
+    font-size: 0.85rem;
+    color: #666;
     margin: 0;
+    text-align: center;
 }
