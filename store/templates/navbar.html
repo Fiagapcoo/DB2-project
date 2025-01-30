@@ -27,7 +27,9 @@
 
         <!-- Icons: Cart and Profile -->
         <div class="nav-icons">
-            <i class="bi bi-cart icon"></i>
+            <a href="{% url 'cart' %}" class="cart-link">
+                <i class="bi bi-cart icon"></i>
+            </a>
 
             <!-- Dropdown for Profile Icon -->
             <div class="dropdown">
