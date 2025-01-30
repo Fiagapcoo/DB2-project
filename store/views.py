@@ -40,7 +40,7 @@ def instruments(request):
         cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."ProductType" = \'instrument\'')
         columns = [col[0] for col in cursor.description]
         instruments = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.execute('SELECT * FROM static_content.categories')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'instrument\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
@@ -52,13 +52,33 @@ def store(request):
 
 def top_bar(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM static_content.categories')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'instrument\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
     context = {'categories': categories}
     print(categories)
     return render(request, 'top_bar.html', context)
+
+def top_bar_discount(request):
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.discountedprice IS NOT NULL);')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    context = {'categories': categories}
+    print(categories)
+    return render(request, 'top_bar_discount.html', context)
+
+def top_bar_accessories(request):
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'accessories\';')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    context = {'categories': categories}
+    print(categories)
+    return render(request, 'top_bar_accessories.html', context)
 
 def navbar(request):
     return render(request, 'navbar.html')
@@ -97,12 +117,24 @@ def accessories(request):
         cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."ProductType" = \'accessories\'')
         columns = [col[0] for col in cursor.description]
         accessories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'accessories\');')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
-    context = {'accessories': accessories}
+    context = {'accessories': accessories, 'categories': categories}
     return render(request, 'accessories.html', context)
 
 def discount(request):
-    return render(request, 'discount.html')
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p.discountedprice IS NOT null')
+        columns = [col[0] for col in cursor.description]
+        produtos = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.discountedprice IS NOT NULL);')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    context = {'produtos': produtos, 'categories': categories}
+    return render(request, 'discount.html', context)
 
 def delete_product(request, product_id):
     # Logic for deleting the product goes here
@@ -199,7 +231,7 @@ def category_detail(request, id):
         cursor.execute('''
             SELECT * FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid 
-            WHERE p.categoryid = %s
+            WHERE p.categoryid = %s AND p."ProductType" = \'instrument\'
         ''', [id])
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
@@ -211,7 +243,7 @@ def category_detail(request, id):
         ''', [id])
         category_name = cursor.fetchone()
         
-        cursor.execute('SELECT * FROM static_content.categories')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'instrument\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
         
@@ -221,6 +253,64 @@ def category_detail(request, id):
         'categories': categories
     }
     return render(request, 'category_detail.html', context)
+
+def category_detail_discount(request, id):
+    with connection.cursor() as cursor:
+        # Get products with stock information
+        cursor.execute('''
+            SELECT * FROM dynamic_content.products p 
+            JOIN dynamic_content.stock s ON s.productid = p.productid 
+            WHERE p.categoryid = %s AND p.discountedprice IS NOT null
+        ''', [id])
+        columns = [col[0] for col in cursor.description]
+        products = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        # Get category name
+        cursor.execute('''
+            SELECT name FROM static_content.categories c 
+            WHERE categoryid = %s
+        ''', [id])
+        category_name = cursor.fetchone()
+        
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.discountedprice IS NOT NULL);')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+    context = {
+        'products': products, 
+        'category_name': category_name[0] if category_name else '',
+        'categories': categories
+    }
+    return render(request, 'category_detail_discount.html', context)
+
+def category_detail_accessories(request, id):
+    with connection.cursor() as cursor:
+        # Get products with stock information
+        cursor.execute('''
+            SELECT * FROM dynamic_content.products p 
+            JOIN dynamic_content.stock s ON s.productid = p.productid 
+            WHERE p.categoryid = %s AND p."ProductType" = \'accessories\'
+        ''', [id])
+        columns = [col[0] for col in cursor.description]
+        products = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        # Get category name
+        cursor.execute('''
+            SELECT name FROM static_content.categories c 
+            WHERE categoryid = %s
+        ''', [id])
+        category_name = cursor.fetchone()
+        
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'accessories\');')
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+    context = {
+        'products': products, 
+        'category_name': category_name[0] if category_name else '',
+        'categories': categories
+    }
+    return render(request, 'category_detail_accessories.html', context)
 
 def product_detail(request, id):
     with connection.cursor() as cursor:
