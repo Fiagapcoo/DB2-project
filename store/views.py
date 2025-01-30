@@ -13,7 +13,7 @@ def index(request):
             print (f"Name: {request.session['user_name']}")
             return render(request, 'store.html', {'products': products})
         else:
-                return redirect('login')
+            return redirect('login')
     except KeyError:
         return redirect('login')    
     
