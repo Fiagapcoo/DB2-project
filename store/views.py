@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, HttpResponse, redirect
 from .models import *
 from django.db import connection
 from .mock_data import PRODUCTS
+from django.http import JsonResponse
 
 def index(request):
     try:
@@ -236,3 +237,18 @@ def product_detail(request, id):
         
     context = {'product': product, 'categories': categories}
     return render(request, 'product_detail.html', context)
+
+
+def add_to_cart(request, id):
+    cart = request.COOKIES.get('cart', '')
+    cart = cart.split(',') if cart else []
+    if str(id) not in cart:
+        cart.append(str(id))
+    cart = ','.join(cart)
+    response = JsonResponse({'message': 'Product added to cart', 'cart': cart})
+    response.set_cookie('cart', cart)
+    return response
+
+
+def admin(request):
+    return render(request, 'admin.html')

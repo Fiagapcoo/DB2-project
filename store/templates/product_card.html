@@ -12,6 +12,9 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+    a{
+        text-decoration: none;
+    }
 </style>
 {% endblock %}
 
@@ -36,7 +39,7 @@
                     {% endif %}
 
                     <div class="action-buttons">
-                        <a href="" class="btn btn-secondary basket-btn">Adicionar</a>
+                        <a href="{% url 'add_to_cart' product.productid %}" class="btn btn-secondary basket-btn">Adicionar</a>
                         <a href="{% url 'checkout' product.productid %}" class="btn btn-secondary basket-btn">Comprar Agora</a>
                     </div>
                 </div>

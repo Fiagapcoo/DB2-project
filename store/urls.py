@@ -26,6 +26,12 @@ urlpatterns = [
     path("logout", views.logout, name="logout"),
     path("checkout/<int:product_id>/", views.checkout, name="checkout"),
     path("cart", views.cart, name="cart"),
+    path('add-to-cart/<int:id>/', views.add_to_cart, name='add_to_cart'),
     path('category_detail/<int:id>/', views.category_detail, name='category_detail'),
     path('product_detail/<int:id>/', views.product_detail, name='product_detail'),
+    
+    
+    ##ADMIN URLS
+    
+    path('adminpage/', views.admin, name='admin'),
 ]
