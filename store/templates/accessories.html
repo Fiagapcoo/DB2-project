@@ -1,8 +1,18 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/new.css' %}">
+{% endblock %}
 
 {% block content %}
-  
-{% include 'top_bar_accessories.html' with categories=categories %}
+
+        <!-- Barra vermelha -->
+        <div class="red-bar"></div>
+
+        <!-- Título "Novos Produtos" -->
+        <h2 class="new-products-title">Acessórios</h2>
+
 {% include "product_card.html" with products=accessories %}
 
 {% endblock %}

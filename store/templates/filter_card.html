@@ -11,6 +11,16 @@
 
 {% block content %}
 <div class="filter-card">
+    
+    <!-- Dropdown de Categorias -->
+    <label for="categoria">Categoria</label>
+    <select id="categoria" class="form-select">
+        <option value="">Todas as Categorias</option>
+        {% for categoria in categorias %}
+            <option value="{{ categoria.id_cat }}">{{ categoria.nome_cat }}</option>
+        {% endfor %}
+    </select>
+
     <label for="marca">Marca</label>
     <select id="marca" class="form-select">
         <option>Selecione uma Marca</option>

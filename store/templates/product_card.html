@@ -12,7 +12,7 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    a{
+    a {
         text-decoration: none;
     }
 </style>
@@ -67,8 +67,41 @@
         </div>
     {% endif %}
 </div>
-{% endblock %}
 
+<!-- 📌 Paginação manual sem Django Paginator -->
+{% if total_pages > 1 %}
+    <div class="pagination-container">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">Primeira</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ previous_page_number }}">Anterior</a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ page_number }} de {{ total_pages }}
+                    </span>
+                </li>
+
+                {% if has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ next_page_number }}">Próxima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ total_pages }}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endif %}
+
+{% endblock %}
 
 
 <script>

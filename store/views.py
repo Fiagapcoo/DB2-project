@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, HttpResponse, redirect
 from .models import *
+from django.core.paginator import Paginator
 from django.db import connection
 from .mock_data import PRODUCTS
 from django.http import JsonResponse
@@ -88,7 +89,8 @@ def brand(request, brand_id):
     return render(request, 'brand.html', {'brand': brand})
 
 def filter_card(request):
-    return render(request, 'filter_card.html')
+    categorias = Categoria.objects.all()
+    return render(request, 'filter_card.html', {'categorias': categorias})
 
 def product_details(request):
     return render(request, 'product_details.html')
@@ -255,31 +257,20 @@ def category_detail(request, id):
     return render(request, 'category_detail.html', context)
 
 def category_detail_discount(request, id):
-    with connection.cursor() as cursor:
-        # Get products with stock information
-        cursor.execute('''
-            SELECT * FROM dynamic_content.products p 
-            JOIN dynamic_content.stock s ON s.productid = p.productid 
-            WHERE p.categoryid = %s AND p.discountedprice IS NOT null
-        ''', [id])
-        columns = [col[0] for col in cursor.description]
-        products = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        
-        # Get category name
-        cursor.execute('''
-            SELECT name FROM static_content.categories c 
-            WHERE categoryid = %s
-        ''', [id])
-        category_name = cursor.fetchone()
-        
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.discountedprice IS NOT NULL);')
-        columns = [col[0] for col in cursor.description]
-        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        
+    # 🔹 Buscar os produtos da categoria com desconto
+    products = Produtos.objects.filter(id_categoria=id, preco__isnull=False).select_related('id_categoria')
+
+    # 🔹 Buscar o nome da categoria
+    category = Categoria.objects.filter(id_cat=id).first()
+
+    # 🔹 Aplicar paginação (15 produtos por página)
+    paginator = Paginator(products, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'products': products, 
-        'category_name': category_name[0] if category_name else '',
-        'categories': categories
+        'products': page_obj,  # Passa apenas os produtos da página atual
+        'category_name': category.nome_cat if category else 'Categoria Não Encontrada',
     }
     return render(request, 'category_detail_discount.html', context)
 

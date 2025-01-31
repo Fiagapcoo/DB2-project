@@ -1,8 +1,30 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/new.css' %}">
+{% endblock %}
 
 {% block content %}
-  
-{% include 'top_bar_discount.html' with categories=categories %}
-{% include "product_card.html" with products=produtos %}
+
+
+<div class="container-fluid gx-0 vh-80">
+    <div class="row">
+        <!-- Coluna do filtro -->
+        <div class="col-md-3">
+            {% include 'filter_card.html' with categorias=categories %}
+        </div>
+
+        <div class="col-md-9">
+            <!-- Barra vermelha -->
+            <div class="red-bar"></div>
+
+            <!-- Título "Novos Produtos" -->
+            <h2 class="new-products-title">Descontos</h2>
+            {% include "product_card.html" with products=produtos %}
+        </div>
+    </div>
+</div>
+
 
 {% endblock %}

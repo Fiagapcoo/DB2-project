@@ -39,14 +39,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%; /* Faz o container ocupar toda a largura disponível */
+    height: 200px; /* Defina um tamanho fixo para a altura */
+    overflow: hidden; /* Garante que a imagem não vaze */
 }
 
 /* Ajuste da Imagem */
 .product-image {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    object-fit: contain; /* Mantém toda a imagem sem cortes */
+    width: 100%; /* A imagem ocupará toda a largura disponível */
+    height: 100%; /* Altura fixa para uniformizar */
+    object-fit: contain; /* Mantém a proporção sem cortar */
 }
 
 /* Área de Detalhes */
@@ -126,6 +128,8 @@
     background-color: #28a745;
     color: white;
     border: none;
+    height: 60px;
+    width: 120px;
 }
 
 .basket-btn.add-to-cart:hover {
@@ -137,6 +141,8 @@
     background-color: #007bff;
     color: white;
     border: none;
+    height: 60px;
+    width: 120px;
 }
 
 .basket-btn.buy-now:hover {
@@ -147,4 +153,30 @@
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); /* Adapta a grade de forma responsiva */
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination .page-item .page-link {
+    color: #333;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin: 0 5px;
+    transition: all 0.3s ease-in-out;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
 }
