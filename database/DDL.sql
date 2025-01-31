@@ -92,7 +92,7 @@ CREATE TABLE STATIC_CONTENT.Categories (
     CategoryID SERIAL PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     Description TEXT,
-    preview_img VARCHAR(255) NOT NULL,
+    preview_img VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE STATIC_CONTENT.Sub_Categories (

@@ -40,4 +40,5 @@ urlpatterns = [
     ##ADMIN URLS
     
     path('adminpage/', views.admin, name='admin'),
+    path('add_content/<str:tablename>/', views.add_content, name='add_content'),
 ]

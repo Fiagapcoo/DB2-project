@@ -1,0 +1,115 @@
+{% extends "sidebar.html" %}
+{% block content %}
+<!-- add_content.html -->
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <h2>Add {{ table_name }}</h2>
+
+  {% for field in fields %}
+  <div class="form-group">
+    {% if field.name != 'lastupdated' %}
+      <label for="{{ field.name }}">{{ field.name|title }}</label>
+    {% endif %}
+
+    {% if table_name == 'dynamic_content.products' and field.name == 'categoryid' %}
+      <select name="{{ field.name }}" id="{{ field.name }}" class="form-control">
+        <option value="" disabled selected>Selecione uma opção</option>
+        {% for category in categories %}
+          <option value="{{ category.categoryid }}">{{ category.name }}</option>
+        {% endfor %}
+      </select>
+
+    {% elif table_name == 'dynamic_content.stock' and field.name == 'productid' %}
+      <select name="{{ field.name }}" id="{{ field.name }}" class="form-control">
+        <option value="" disabled selected>Selecione uma opção</option>
+        {% for product in products %}
+          <option value="{{ product.productid }}">{{ product.name }}</option>
+        {% endfor %}
+      </select>
+
+    {% elif field.name == 'producttype' %}
+      <select name="{{ field.name }}" id="{{ field.name }}" class="form-control">
+        <option value="" disabled selected>Selecione uma opção</option>
+        <option value="instrument">Instrumento</option>
+        <option value="accessories">Acessório</option>
+      </select>
+
+    {% elif field.name == 'lastupdated' %}
+      <span></span>
+
+    {% elif field.name == 'preview_img' or field.name == 'image_url' %}
+      <input
+        type="file"
+        name="{{ field.name }}"
+        id="{{ field.name }}"
+        class="form-control"
+        accept="image/*"
+        onchange="previewImage(event, '{{ field.name }}')"
+      />
+      <img
+        id="preview_{{ field.name }}"
+        src=""
+        alt="Preview"
+        style="display: none; max-width: 200px; margin-top: 10px"
+      />
+
+    {% elif field.type == 'text' %}
+      <input
+        type="text"
+        name="{{ field.name }}"
+        id="{{ field.name }}"
+        class="form-control"
+      />
+
+    {% elif field.type == 'integer' %}
+      <input
+        type="number"
+        name="{{ field.name }}"
+        id="{{ field.name }}"
+        class="form-control"
+      />
+
+    {% elif field.type == 'boolean' %}
+      <input
+        type="checkbox"
+        name="{{ field.name }}"
+        id="{{ field.name }}"
+        class="form-control"
+      />
+
+    {% elif field.type == 'timestamp' or field.type == 'date' %}
+      <input
+        type="datetime-local"
+        name="{{ field.name }}"
+        id="{{ field.name }}"
+        class="form-control"
+      />
+
+    {% else %}
+      <input
+        type="text"
+        name="{{ field.name }}"
+        id="{{ field.name }}"
+        class="form-control"
+      />
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+<!-- JavaScript para a pré-visualização da imagem -->
+<script>
+  function previewImage(event, fieldName) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      var output = document.getElementById("preview_" + fieldName);
+      output.src = reader.result;
+      output.style.display = "block";
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+</script>
+
+{% endblock %}

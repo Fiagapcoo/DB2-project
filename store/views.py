@@ -5,6 +5,7 @@ from django.db import connection
 from .mock_data import PRODUCTS
 from django.http import JsonResponse
 import urllib.parse
+from . import upload_to_cloudinary
 
 def index(request):
     try:
@@ -38,10 +39,10 @@ def product_card(request):
 
 def instruments(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."ProductType" = \'instrument\'')
+        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p.producttype = \'instrument\'')
         columns = [col[0] for col in cursor.description]
         instruments = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'instrument\');')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'instrument\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
@@ -53,7 +54,7 @@ def store(request):
 
 def top_bar(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'instrument\');')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'instrument\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
@@ -73,7 +74,7 @@ def top_bar_discount(request):
 
 def top_bar_accessories(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'accessories\';')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'accessories\';')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
@@ -116,10 +117,10 @@ def highlights(request):
 
 def accessories(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."ProductType" = \'accessories\'')
+        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."producttype" = \'accessories\'')
         columns = [col[0] for col in cursor.description]
         accessories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'accessories\');')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'accessories\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
@@ -223,9 +224,6 @@ def cart(request):
         "cart_total": cart_total,
     })
     
-# views.py
-from django.shortcuts import render
-from django.db import connection
 
 def category_detail(request, id):
     with connection.cursor() as cursor:
@@ -233,7 +231,7 @@ def category_detail(request, id):
         cursor.execute('''
             SELECT * FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid 
-            WHERE p.categoryid = %s AND p."ProductType" = \'instrument\'
+            WHERE p.categoryid = %s AND p."producttype" = \'instrument\'
         ''', [id])
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
@@ -245,7 +243,7 @@ def category_detail(request, id):
         ''', [id])
         category_name = cursor.fetchone()
         
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'instrument\');')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'instrument\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
         
@@ -280,7 +278,7 @@ def category_detail_accessories(request, id):
         cursor.execute('''
             SELECT * FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid 
-            WHERE p.categoryid = %s AND p."ProductType" = \'accessories\'
+            WHERE p.categoryid = %s AND p."producttype" = \'accessories\'
         ''', [id])
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
@@ -292,7 +290,7 @@ def category_detail_accessories(request, id):
         ''', [id])
         category_name = cursor.fetchone()
         
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."ProductType" = \'accessories\');')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'accessories\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
         
@@ -335,8 +333,6 @@ def add_to_cart(request, id):
 def admin(request):
     return render(request, 'admin.html')
 
-from django.http import JsonResponse
-from django.db import connection
 
 def get_cart_items(request):
     product_ids = request.GET.get('ids', '')
@@ -391,3 +387,113 @@ def remove_from_cart(request, id):
     response.set_cookie('cart', new_cart, path='/', max_age=31536000)  
 
     return response
+
+def add_content(request, tablename):
+    #TODO check if manager = true
+    
+    if request.method == 'POST':
+        print(request.POST)
+        if(tablename == 'dynamic_content.stock'):
+            ProductID = request.POST.get('productid')
+            quantity = request.POST.get('quantity')
+            
+            with connection.cursor() as cursor:
+                cursor.execute(f"UPDATE {tablename} SET quantity = quantity + %s, lastupdated = NOW() WHERE productid = %s", [quantity, ProductID])
+                return redirect('admin')
+        elif tablename == 'static_content.categories':
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            preview_img = request.FILES.get('preview_img')
+
+            if preview_img:
+                preview_img_url = upload_to_cloudinary.upload_image(preview_img) 
+            else:
+                preview_img_url = None 
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO static_content.categories (name, description, preview_img) VALUES (%s, %s, %s)",
+                    [name, description, preview_img_url]
+                )
+
+            return redirect('admin')
+        elif tablename == 'dynamic_content.products':
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            
+            baseprice = request.POST.get('baseprice')
+            discountedprice = request.POST.get('discountedprice')
+
+            try:
+                baseprice = float(baseprice) if baseprice else None
+                discountedprice = float(discountedprice) if discountedprice else None
+            except ValueError:
+                baseprice = None
+                discountedprice = None
+
+            productserialnumber = request.POST.get('productserialnumber')
+            producttype = request.POST.get('producttype')
+            categoryid = request.POST.get('categoryid')
+            
+            try:
+                categoryid = int(categoryid) if categoryid else None
+            except ValueError:
+                categoryid = None
+
+            image_url = request.FILES.get('image_url')
+
+            if image_url:
+                image_url = upload_to_cloudinary.upload_image(image_url) 
+            else:
+                image_url = None 
+
+            print("INSERT COMMAND: INSERT INTO dynamic_content.products (name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                % (name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url))
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO dynamic_content.products (name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    [name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url]
+                )
+
+            return redirect('admin')
+
+            
+    
+    # GET request handling (showing the form)
+    with connection.cursor() as cursor:
+        # First query: Get fields
+        cursor.execute("""
+            SELECT column_name, data_type 
+            FROM information_schema.columns 
+            WHERE table_name = %s
+            AND ordinal_position > 1  -- Skip the first column (ID)
+            ORDER BY ordinal_position
+        """, [tablename.split('.')[-1]])
+        
+        fields = []
+        for column in cursor.fetchall():
+            fields.append({
+                'name': column[0],
+                'type': column[1]
+            })
+        
+        # Second query: Get categories
+        cursor.execute("SELECT * FROM static_content.categories")
+        columns = [col[0] for col in cursor.description]
+        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        cursor.execute(f"SELECT * FROM dynamic_content.products")
+        columns = [col[0] for col in cursor.description]
+        products = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    context = {
+        'table_name': tablename,
+        'fields': fields,
+        'categories': categories,
+        'products':products
+    }
+    
+    print(context)
+    
+    return render(request, 'add_content.html', context)
