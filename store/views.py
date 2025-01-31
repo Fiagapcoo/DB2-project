@@ -6,6 +6,7 @@ from .mock_data import PRODUCTS
 from django.http import JsonResponse
 import urllib.parse
 from . import upload_to_cloudinary
+import json
 
 def index(request):
     try:
@@ -164,10 +165,10 @@ def highlights(request):
 
 def accessories(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p."producttype" = \'accessories\'')
+        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p.producttype = \'accessories\'')
         columns = [col[0] for col in cursor.description]
         accessories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'accessories\');')
+        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.producttype = \'accessories\');')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
     
@@ -399,16 +400,27 @@ def product_detail(request, id):
     context = {'product': product, 'categories': categories}
     return render(request, 'product_detail.html', context)
 
-
-def add_to_cart(request, id):
-    cart = request.COOKIES.get('cart', '')
-    cart = cart.split(',') if cart else []
-    if str(id) not in cart:
-        cart.append(str(id))
-    cart = ','.join(cart)
-    response = JsonResponse({'message': 'Product added to cart', 'cart': cart})
-    response.set_cookie('cart', cart)
+def add_to_cart(request, id, stock):
+    cart_cookie = request.COOKIES.get('cart', '{}')
+    try:
+        cart_cookie = cart_cookie.replace('\054', ',').replace('\\"', '"').strip('"')
+        cart = json.loads(cart_cookie)
+    except json.JSONDecodeError:
+        cart = {}
+    id = str(id)
+    if id in cart:
+        if stock > cart[id]:
+            cart[id] += 1
+            response = JsonResponse({'message': 'Produto adicionado ao carrinho', 'cart': cart})
+        else:
+            response = JsonResponse({'message': 'Produto não adicionado ao carrinho devido à falta de stock', 'cart': cart})
+    else:
+        cart[id] = 1
+        response = JsonResponse({'message': 'Produto adicionado ao carrinho', 'cart': cart})
+    cart_json = json.dumps(cart, separators=(',', ':'))
+    response.set_cookie('cart', cart_json, path='/', max_age=31536000)
     return response
+
 
 
 def admin(request):

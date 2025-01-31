@@ -15,7 +15,9 @@
 
     <div class="cart-total mt-4">
         <h4>Total: <span id="cart-total">€0.00</span></h4>
-        <button class="btn btn-primary mt-2" id="checkout-btn" disabled>Finalizar Compra</button>
+        <a id="checkout-link" class="nav-link disabled">
+            <button class="btn btn-primary mt-2" id="checkout-btn" disabled>Finalizar Compra</button>
+        </a>
     </div>
 </div>
 {% endblock %}
@@ -26,60 +28,123 @@ document.addEventListener("DOMContentLoaded", function() {
     const cartContainer = document.getElementById("cart-items");
     const cartTotalElement = document.getElementById("cart-total");
     const checkoutButton = document.getElementById("checkout-btn");
+    const checkoutLink = document.getElementById("checkout-link");
 
     function getCartFromCookies() {
         const cookies = document.cookie.split('; ').find(row => row.startsWith('cart='));
-        if (!cookies) return [];
+        if (!cookies) return {};
 
-        let cart = decodeURIComponent(cookies.split('=')[1]).replace(/\\054/g, ',');
-        return cart.split(',').map(id => id.replace(/"/g, '')).filter(id => id);
+        try {
+            let rawCart = decodeURIComponent(cookies.split('=')[1])
+                .replace(/\\054/g, ',')
+                .replace(/\\"/g, '"')
+                .replace(/^"|"$/g, '');
+
+            return JSON.parse(rawCart);
+        } catch (e) {
+            console.error("❌ Erro ao interpretar JSON do carrinho:", e);
+            return {};
+        }
     }
 
+
+    function saveCartToCookies(cart) {
+    let existingCart = getCartFromCookies(); // 🔥 Obtém os produtos já existentes no cookie
+
+    // 🔥 Atualiza apenas os produtos modificados, mantendo os anteriores
+    Object.keys(cart).forEach(productId => {
+        existingCart[productId] = cart[productId];
+    });
+
+    // 🔥 Remove produtos que tenham sido deletados
+    Object.keys(existingCart).forEach(productId => {
+        if (!cart.hasOwnProperty(productId)) {
+            delete existingCart[productId];
+        }
+    });
+
+    // 🔥 Converte manualmente para o formato correto: {"1":1\054"2":1\054"3":2}
+    let customCartString = "{";
+    customCartString += Object.keys(existingCart)
+        .map(productId => `\"${productId}\":${existingCart[productId]}`)
+        .join(", ");  // 🔥 Mantém a vírgula como \054 caso seja necessário
+    customCartString += "}";
+
+    // 🔥 Salva no cookie de forma personalizada
+    document.cookie = `cart=${customCartString}; path=/; max-age=31536000`;
+
+    console.log("✅ Carrinho atualizado nos cookies:", customCartString);
+}
+
+
+
+
+
+
+
+    // ✅ Atualiza o total do carrinho corretamente
     function updateCartTotal() {
         let total = 0;
-        document.querySelectorAll(".cart-item").forEach(item => {
+        let cartItems = document.querySelectorAll(".cart-item");
+
+        cartItems.forEach(item => {
             let price = parseFloat(item.querySelector(".cart-item-price").innerText.replace('€', '').replace(',', '.'));
             let quantity = parseInt(item.querySelector(".cart-item-quantity").value);
             total += price * quantity;
         });
+
         cartTotalElement.innerText = `€${total.toFixed(2)}`;
-        checkoutButton.disabled = total === 0;
+        if (cartItems.length === 0) {
+            cartContainer.innerHTML = "<p>Seu carrinho está vazio. 🛍️</p>";
+            checkoutButton.disabled = true;
+            checkoutLink.classList.add("disabled");
+            checkoutLink.removeAttribute("href");
+        } else {
+            checkoutButton.disabled = false;
+            checkoutLink.classList.remove("disabled");
+            checkoutLink.setAttribute("href", "{% url 'payment_details' %}");
+        }
     }
 
+    checkoutLink.addEventListener("click", function(event) {
+        let cart = getCartFromCookies();
+        if (Object.keys(cart).length === 0) {
+            event.preventDefault();
+            alert("Seu carrinho está vazio! Adicione produtos antes de finalizar a compra.");
+        }
+    });
+
+    // ✅ Remove item do carrinho e atualiza os cookies
     function removeFromCart(productId) {
-        if (!productId) {
-            console.error("Erro: ID do produto não fornecido.");
-            return;
+        let cart = getCartFromCookies();  // 🔥 Obtém o carrinho atualizado
+
+        if (cart.hasOwnProperty(productId)) {
+            delete cart[productId];  // 🔥 Remove o produto do carrinho
+            saveCartToCookies(cart); // 🔥 Atualiza os cookies corretamente
         }
 
-        fetch(`/remove-from-cart/${productId}/`, {
-            method: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Resposta da API:", data);
+        let itemElement = document.getElementById(`cart-item-${productId}`);
+        if (itemElement) {
+            itemElement.remove(); // 🔥 Remove o item da interface
+        }
 
-            if (data.error) {
-                console.error("Erro ao remover:", data.error);
-                return;
-            }
+        updateCartTotal(); // 🔥 Atualiza o total do carrinho
 
-            document.cookie = `cart=${data.cart}; path=/; max-age=31536000`;
+        // ✅ Se o carrinho estiver vazio, exibe a mensagem correta
+        if (Object.keys(cart).length === 0) {
+            document.getElementById("cart-items").innerHTML = "<p>Seu carrinho está vazio. 🛍️</p>";
+        }
 
-            let itemElement = document.getElementById(`cart-item-${productId}`);
-            if (itemElement) {
-                itemElement.remove();
-            }
-
-            updateCartTotal();
-        })
-        .catch(error => console.error('Erro ao remover do carrinho:', error));
+        console.log(`🗑 Produto ${productId} removido do carrinho. Novo carrinho:`, cart);
     }
 
     window.removeFromCart = removeFromCart;
 
+
+
+    // ✅ Atualiza a quantidade no carrinho e salva nos cookies
     function updateQuantity(productId, inputElement, maxStock) {
+        let cart = getCartFromCookies();  // 🔥 Carrega o carrinho atualizado
         let quantity = parseInt(inputElement.value);
 
         if (isNaN(quantity) || quantity < 1) {
@@ -89,22 +154,31 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         inputElement.value = quantity;
+        cart[productId] = quantity;  // 🔥 Atualiza a quantidade corretamente
+        saveCartToCookies(cart);
         updateCartTotal();
     }
 
+
+
+    // ✅ Carrega os itens do carrinho e exibe na página
     function loadCartItems() {
         let cart = getCartFromCookies();
-        if (cart.length === 0) {
+        let productIds = Object.keys(cart);
+
+        if (productIds.length === 0) {
             cartContainer.innerHTML = "<p>Seu carrinho está vazio. 🛍️</p>";
             return;
         }
 
-        fetch(`/get-cart-items/?ids=${cart.join(',')}`)
+        fetch(`/get-cart-items/?ids=${productIds.join(',')}`)
             .then(response => response.json())
             .then(data => {
                 cartContainer.innerHTML = "";
 
                 data.products.forEach(product => {
+                    let quantity = cart[product.productid] || 1;
+
                     let itemHTML = `
                         <div class="cart-item d-flex align-items-center justify-content-between mb-3" id="cart-item-${product.productid}">
                             <img src="${product.image_url}" class="cart-item-image" alt="${product.name}">
@@ -118,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <!-- Contador de Quantidade ao lado -->
                                 <div class="quantity-selector d-flex align-items-center ms-3">
                                     <button class="decrease-qty" data-id="${product.productid}">-</button>
-                                    <input type="number" class="cart-item-quantity text-center" id="qty-${product.productid}" value="1" min="1" max="${product.quantity}">
+                                    <input type="number" class="cart-item-quantity text-center" id="qty-${product.productid}" value="${quantity}" min="1" max="${product.quantity}">
                                     <button class="increase-qty" data-id="${product.productid}">+</button>
                                 </div>
                             </div>
@@ -131,13 +205,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 updateCartTotal();
 
-                // Adiciona evento aos botões de aumentar/diminuir quantidade
+                // ✅ Eventos para aumentar/diminuir quantidade
                 document.querySelectorAll(".decrease-qty").forEach(button => {
                     button.addEventListener("click", function() {
                         let productId = this.getAttribute("data-id");
                         let inputElement = document.getElementById(`qty-${productId}`);
                         inputElement.value = Math.max(1, parseInt(inputElement.value) - 1);
-                        updateCartTotal();
+                        updateQuantity(productId, inputElement, inputElement.getAttribute("max"));
                     });
                 });
 
@@ -147,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         let inputElement = document.getElementById(`qty-${productId}`);
                         let maxStock = inputElement.getAttribute("max");
                         inputElement.value = Math.min(parseInt(maxStock), parseInt(inputElement.value) + 1);
-                        updateCartTotal();
+                        updateQuantity(productId, inputElement, maxStock);
                     });
                 });
 
