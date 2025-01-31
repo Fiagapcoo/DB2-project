@@ -49,7 +49,7 @@
                     {% endif %}
                 
                     <div class="action-buttons">
-                        <button class="btn basket-btn add-to-cart" data-id="{{ product.productid }}" onclick="event.stopPropagation();">
+                        <button class="btn basket-btn add-to-cart" data-id="{{ product.productid }}" stock="{{ product.quantity }}" onclick="event.stopPropagation();">
                             Adicionar
                         </button>
                         <a href="{% url 'checkout' product.productid %}" class="btn basket-btn buy-now" onclick="event.stopPropagation();">
@@ -109,12 +109,13 @@
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', function() {
                 let productId = this.getAttribute('data-id');
-                let url = `/add-to-cart/${productId}/`; // Corrigida para coincidir com `urls.py`
+                let stock = this.getAttribute('stock');
+                let url = `/add-to-cart/${productId}/${stock}/`;
 
                 fetch(url, {
                     method: 'GET',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest' // Indica que é uma requisição AJAX
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => {
