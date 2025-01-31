@@ -7,7 +7,6 @@
 {% block content %}
     <div class="brand-card">
         <div class="image-wrapper">
-            <!-- Exibe a imagem da marca da base de dados, se disponível -->
             <img src="{{ brand.image.url }}" alt="{{ brand.name }}" class="brand-image">
         </div>
         <div class="brand-details">
@@ -15,4 +14,5 @@
             <p class="brand-description">{{ brand.description }}</p>
         </div>
     </div>
+
 {% endblock %}
