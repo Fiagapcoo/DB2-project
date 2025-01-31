@@ -520,3 +520,37 @@ def add_content(request, tablename):
     print(context)
     
     return render(request, 'add_content.html', context)
+
+
+def adminview(request, tablename):
+    with connection.cursor() as cursor:
+        # Fetch table data
+        cursor.execute(f"SELECT * FROM {tablename}")
+        columns = [col[0] for col in cursor.description]
+        rows = cursor.fetchall()
+
+        # Remove first column (ID)
+        columns = columns[1:]
+        data = [dict(zip(columns, row[1:])) for row in rows]
+
+        # Fetch category names
+        cursor.execute("SELECT categoryid, name FROM static_content.categories")
+        category_dict = {row[0]: row[1] for row in cursor.fetchall()}  # Convert to dictionary
+
+        # Replace categoryid with category name
+        for item in data:
+            if "categoryid" in item and item["categoryid"] in category_dict:
+                item["categoryid"] = category_dict[item["categoryid"]]
+
+    # Pagination (20 rows per page)
+    paginator = Paginator(data, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'table_name': tablename,
+        'columns': columns,
+        'page_obj': page_obj,
+    }
+    
+    return render(request, 'adminview.html', context)

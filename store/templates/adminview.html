@@ -1,0 +1,88 @@
+{% extends "sidebar.html" %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/table.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pagination.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Title -->
+<h2 class="table-title">Tabela: {{ table_name|title }}</h2>
+
+<!-- Table Container -->
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                {% for column in columns %}
+                    <th>{{ column|title }}</th>
+                {% endfor %}
+                <th>Ações</th>  <!-- New column for Edit/Remove buttons -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in page_obj %}
+                <tr>
+                    {% for key, value in row.items %}
+                    <td>
+                        {% if key == "image_url" or key == "preview_img" %}
+                            <img src="{{ value }}" alt="Image" class="table-image">
+                        
+                        {% elif key == "ismanager" %}
+                            {% if value == True or value == "True" %}
+ 
+                                    ✅ 
+                            {% else %}
+                                    ❌
+                            {% endif %}
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td>
+                        <a href="#" class="btn btn-edit">✏️ Editar</a>
+                        <a href="#" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Controls -->
+<div class="pagination-container">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">&laquo;&laquo;</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">&laquo;</a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><a class="page-link">{{ num }}</a></li>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">&raquo;</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">&raquo;&raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+{% endblock %}

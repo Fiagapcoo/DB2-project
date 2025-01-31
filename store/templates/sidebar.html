@@ -48,28 +48,21 @@
         
         <button class="dropdown-btn">Adicionar</button>
         <div class="dropdown-container">
-            <a href="{% url 'add_content' tablename='dynamic_content.products' %}">Adicionar Produto</a>
-            <a href="{% url 'add_content' tablename='dynamic_content.stock' %}">Adicionar Stock</a>
-            <a href="{% url 'add_content' tablename='static_content.categories' %}">Adicionar Categorias</a>
-            <a href="{% url 'add_content' tablename='static_content.brands' %}">Adicionar Marcas</a>
+            <a href="{% url 'add_content' tablename='dynamic_content.products' %}">Produto</a>
+            <a href="{% url 'add_content' tablename='dynamic_content.stock' %}">Stock</a>
+            <a href="{% url 'add_content' tablename='static_content.categories' %}">Categorias</a>
+            <a href="{% url 'add_content' tablename='static_content.brands' %}">Marcas</a>
         </div>
         
-        <button class="dropdown-btn">Editar</button>
+        <button class="dropdown-btn">Editar/Eliminar</button>
         <div class="dropdown-container">
-            <a href="#">Editar Produto</a>
-            <a href="#">Editar Categorias</a>
-            <a href="#">Editar Marcas</a>
+            <a href="{% url 'adminview' tablename='dynamic_content.products' %}">Produtos</a>
+            <a href="{% url 'adminview' tablename='static_content.categories' %}">Categorias</a>
+            <a href="#">Marcas</a>
+            <a href="{% url 'adminview' tablename='hr.users' %}">Utilizadores</a>
         </div>
         
-        <button class="dropdown-btn">Eliminar</button>
-        <div class="dropdown-container">
-            <a href="#">Eliminar Utilizadores</a>
-            <a href="#">Eliminar Produto</a>
-            <a href="#">Eliminar Categorias</a>
-            <a href="#">Eliminar Marcas</a>
-        </div>
-        
-        <a href="#">Vista de Utilizador comum</a>
+        <a href="{% url 'store' %}">Vista de Utilizador comum</a>
     </div>
     
     <div class="content">

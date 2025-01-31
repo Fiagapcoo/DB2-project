@@ -41,4 +41,5 @@ urlpatterns = [
     
     path('adminpage/', views.admin, name='admin'),
     path('add_content/<str:tablename>/', views.add_content, name='add_content'),
+    path('adminview/<str:tablename>/', views.adminview, name='adminview'),
 ]
