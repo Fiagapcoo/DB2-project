@@ -10,12 +10,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="filter-card">
+    <div class="card shadow-sm p-3 mb-4 bg-white rounded filter-card">
+        <h5 class="card-title text-center text-primary mb-3"><i class="bi bi-funnel"></i> Filtros</h5>
     
     <!-- Formulário para o Filtro -->
     <form method="GET" id="filter-form">
         <!-- Dropdown de Categorias -->
-        <label for="categoria">Categoria</label>
+        <label for="categoria" class="form-label fw-bold">📂 Categoria</label>
         <select id="categoria" name="categoria" class="form-select" onchange="document.getElementById('filter-form').submit();">
             <option value="">Todas as Categorias</option>
             {% for categoria in categories %}
@@ -26,16 +27,32 @@
         </select>
     
         <!-- Slider de Preço Dinâmico -->
-        <label for="price-range" class="form-label">Preço</label>
-        <div id="price-slider" class="mt-3" style="height: 10px;"></div>
-    
-        <div class="price-display mt-2">
-            <input type="text" id="min-value" name="min_price" class="price-input" readonly value="{{ min_price }}">
-            <span> - </span>
-            <input type="text" id="max-value" name="max_price" class="price-input" readonly value="{{ max_price }}">
+        <div class="mb-3">
+            <label for="price-range" class="form-label fw-bold">💰 Faixa de Preço</label>
+            <div id="price-slider" class="mt-2"></div>
+            <div class="price-display d-flex justify-content-between mt-2">
+                <input type="text" id="min-value" name="min_price" class="price-input form-control text-center fw-bold" readonly value="{{ min_price }}">
+                <span class="fw-bold">-</span>
+                <input type="text" id="max-value" name="max_price" class="price-input form-control text-center fw-bold" readonly value="{{ max_price }}">
+            </div>
         </div>
 
-        <!-- Filtro por Avaliação -->
+        <!-- Filtro de Estoque 
+        <div class="mb-3">
+            <label class="form-label fw-bold">📦 Disponibilidade</label>
+            <select id="stock" name="stock" class="form-select" onchange="document.getElementById('filter-form').submit();">
+                <option value="">Todos</option>
+                <option value="in_stock" {% if selected_stock == 'in_stock' %}selected{% endif %}>Em Estoque</option>
+                <option value="out_of_stock" {% if selected_stock == 'out_of_stock' %}selected{% endif %}>Sem Estoque</option>
+            </select>
+        </div> -->
+
+        <!-- Botão de Reset -->
+        <div class="d-grid">
+            <a href="{% url 'discount' %}" class="btn btn-secondary">🔄 Resetar Filtros</a>
+        </div>
+
+        <!-- Filtro por Avaliação
         <label class="mt-3">Avaliação</label>
         <div class="rating-filter">
             <label class="rating-option">
@@ -69,6 +86,8 @@
                 </span>
             </label>
         </div>
+        -->
+        
     </form>
 </div>
 {% endblock %}

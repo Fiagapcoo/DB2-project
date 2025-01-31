@@ -160,9 +160,6 @@ def new(request):
     
     return render(request, 'new.html', {'products': PRODUCTS})
 
-def highlights(request):
-    return render(request, 'highlights.html')
-
 def accessories(request):
     with connection.cursor() as cursor:
         cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p.producttype = \'accessories\'')
