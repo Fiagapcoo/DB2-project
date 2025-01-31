@@ -27,3 +27,24 @@
 body.active-sidebar {
     overflow: hidden; /* Desativar rolagem ao abrir a sidebar */
 }
+
+/* Corrige a cor do texto do dropdown */
+.form-select {
+    color: black !important;  /* Garante que o texto seja visível */
+    background-color: white !important; /* Fundo branco */
+    border: 1px solid #ced4da; /* Borda padrão */
+}
+
+/* Quando o dropdown está aberto */
+.form-select:focus {
+    color: black !important;
+    background-color: white !important;
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Força a visibilidade das opções */
+.form-select option {
+    color: black !important;
+    background-color: white !important;
+}

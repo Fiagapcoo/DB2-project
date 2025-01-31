@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'cart/css/cart.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Meu Carrinho 🛒</h2>
+
+    <div id="cart-items">
+        <p>Carregando itens do carrinho...</p>
+    </div>
+
+    <div class="cart-total mt-4">
+        <h4>Total: <span id="cart-total">€0.00</span></h4>
+        <button class="btn btn-primary mt-2" id="checkout-btn" disabled>Finalizar Compra</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const cartContainer = document.getElementById("cart-items");
+    const cartTotalElement = document.getElementById("cart-total");
+    const checkoutButton = document.getElementById("checkout-btn");
+
+    function getCartFromCookies() {
+        const cookies = document.cookie.split('; ').find(row => row.startsWith('cart='));
+        if (!cookies) return [];
+
+        let cart = decodeURIComponent(cookies.split('=')[1]).replace(/\\054/g, ',');
+        return cart.split(',').map(id => id.replace(/"/g, '')).filter(id => id);
+    }
+
+    function updateCartTotal() {
+        let total = 0;
+        document.querySelectorAll(".cart-item").forEach(item => {
+            let price = parseFloat(item.querySelector(".cart-item-price").innerText.replace('€', '').replace(',', '.'));
+            let quantity = parseInt(item.querySelector(".cart-item-quantity").value);
+            total += price * quantity;
+        });
+        cartTotalElement.innerText = `€${total.toFixed(2)}`;
+        checkoutButton.disabled = total === 0;
+    }
+
+    function removeFromCart(productId) {
+        if (!productId) {
+            console.error("Erro: ID do produto não fornecido.");
+            return;
+        }
+
+        fetch(`/remove-from-cart/${productId}/`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Resposta da API:", data);
+
+            if (data.error) {
+                console.error("Erro ao remover:", data.error);
+                return;
+            }
+
+            document.cookie = `cart=${data.cart}; path=/; max-age=31536000`;
+
+            let itemElement = document.getElementById(`cart-item-${productId}`);
+            if (itemElement) {
+                itemElement.remove();
+            }
+
+            updateCartTotal();
+        })
+        .catch(error => console.error('Erro ao remover do carrinho:', error));
+    }
+
+    window.removeFromCart = removeFromCart;
+
+    function updateQuantity(productId, inputElement, maxStock) {
+        let quantity = parseInt(inputElement.value);
+
+        if (isNaN(quantity) || quantity < 1) {
+            quantity = 1;
+        } else if (quantity > maxStock) {
+            quantity = maxStock;
+        }
+
+        inputElement.value = quantity;
+        updateCartTotal();
+    }
+
+    function loadCartItems() {
+        let cart = getCartFromCookies();
+        if (cart.length === 0) {
+            cartContainer.innerHTML = "<p>Seu carrinho está vazio. 🛍️</p>";
+            return;
+        }
+
+        fetch(`/get-cart-items/?ids=${cart.join(',')}`)
+            .then(response => response.json())
+            .then(data => {
+                cartContainer.innerHTML = "";
+
+                data.products.forEach(product => {
+                    let itemHTML = `
+                        <div class="cart-item d-flex align-items-center justify-content-between mb-3" id="cart-item-${product.productid}">
+                            <img src="${product.image_url}" class="cart-item-image" alt="${product.name}">
+
+                            <div class="cart-item-details-qty d-flex align-items-center">
+                                <div class="cart-item-details">
+                                    <h5 class="cart-item-name">${product.name}</h5>
+                                    <p class="cart-item-price">€${product.final_price}</p>
+                                </div>
+
+                                <!-- Contador de Quantidade ao lado -->
+                                <div class="quantity-selector d-flex align-items-center ms-3">
+                                    <button class="decrease-qty" data-id="${product.productid}">-</button>
+                                    <input type="number" class="cart-item-quantity text-center" id="qty-${product.productid}" value="1" min="1" max="${product.quantity}">
+                                    <button class="increase-qty" data-id="${product.productid}">+</button>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-danger btn-sm remove-item" onclick="removeFromCart(${product.productid})">Remover</button>
+                        </div>
+                    `;
+                    cartContainer.innerHTML += itemHTML;
+                });
+
+                updateCartTotal();
+
+                // Adiciona evento aos botões de aumentar/diminuir quantidade
+                document.querySelectorAll(".decrease-qty").forEach(button => {
+                    button.addEventListener("click", function() {
+                        let productId = this.getAttribute("data-id");
+                        let inputElement = document.getElementById(`qty-${productId}`);
+                        inputElement.value = Math.max(1, parseInt(inputElement.value) - 1);
+                        updateCartTotal();
+                    });
+                });
+
+                document.querySelectorAll(".increase-qty").forEach(button => {
+                    button.addEventListener("click", function() {
+                        let productId = this.getAttribute("data-id");
+                        let inputElement = document.getElementById(`qty-${productId}`);
+                        let maxStock = inputElement.getAttribute("max");
+                        inputElement.value = Math.min(parseInt(maxStock), parseInt(inputElement.value) + 1);
+                        updateCartTotal();
+                    });
+                });
+
+                document.querySelectorAll(".cart-item-quantity").forEach(input => {
+                    input.addEventListener("change", function() {
+                        let productId = this.getAttribute("id").split('-')[1];
+                        let maxStock = this.getAttribute("max");
+                        updateQuantity(productId, this, maxStock);
+                    });
+                });
+            })
+            .catch(error => {
+                console.error("Erro ao carregar carrinho:", error);
+                cartContainer.innerHTML = "<p>Erro ao carregar os itens do carrinho. Tente novamente.</p>";
+            });
+    }
+
+    loadCartItems();
+});
+</script>
+{% endblock %}

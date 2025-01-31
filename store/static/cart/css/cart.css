@@ -1,0 +1,94 @@
+.cart-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+}
+
+.cart-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.cart-item-details-qty {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Espaço entre nome/preço e quantidade */
+    flex: 1;
+}
+
+.cart-item-details {
+    display: flex;
+    flex-direction: column; /* Nome e preço um abaixo do outro */
+    margin-left: 36px;
+}
+
+.cart-item-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.cart-item-price {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+/* 🔥 Estilização do contador de quantidade */
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    padding: 3px;
+}
+
+/* 🔥 Remove as setas do input */
+.cart-item-quantity {
+    text-align: center;
+    width: 50px;
+    height: 30px;
+    font-size: 16px;
+    border: none;  /* Remove a borda */
+    background: transparent;
+    outline: none; /* Remove o contorno ao clicar */
+    -moz-appearance: textfield; /* Remove as setas no Firefox */
+}
+
+/* 🔥 Remove as setas do input em Chrome, Safari e Edge */
+.cart-item-quantity::-webkit-outer-spin-button,
+.cart-item-quantity::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 🔥 Estilização dos botões de quantidade */
+.quantity-selector button {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: #6c757d;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.quantity-selector button:hover {
+    background: #5a6268;
+}
+
+/* 🔥 Ajusta o espaçamento do botão remover */
+.remove-item {
+    margin-left: auto;
+}

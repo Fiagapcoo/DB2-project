@@ -1,3 +1,6 @@
+/* category.css */
+
+/* Container do Card */
 .card-container {
     display: flex;
     justify-content: center;
@@ -5,23 +8,30 @@
     padding: 10px;
 }
 
+/* Card de Produto */
 .product-card {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 288px; /* Aumentado 20% */
+    width: 288px;
     text-align: left;
     transition: transform 0.2s ease-in-out;
     overflow: hidden;
-    transform: scale(0.9); /* Proporcional ao novo tamanho */
-    transform-origin: center;
 }
 
 .product-card:hover {
-    transform: scale(0.9) translateY(-5px); /* Hover também ajustado */
+    transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
+.product-price-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espaço entre os preços */
+    justify-content: center; /* Alinhar ao centro */
+}
+
+/* Área da Imagem */
 .image-wrapper {
     background: radial-gradient(circle at top left, #FBFBFB, #D3D3D3);
     padding: 15px;
@@ -29,123 +39,144 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%; /* Faz o container ocupar toda a largura disponível */
+    height: 200px; /* Defina um tamanho fixo para a altura */
+    overflow: hidden; /* Garante que a imagem não vaze */
 }
 
+/* Ajuste da Imagem */
 .product-image {
-    max-width: 100%;
-    height: auto;
-    display: block;
+    width: 100%; /* A imagem ocupará toda a largura disponível */
+    height: 100%; /* Altura fixa para uniformizar */
+    object-fit: contain; /* Mantém a proporção sem cortar */
 }
 
+/* Área de Detalhes */
 .product-details {
-    padding: 10px 15px 15px 15px;
-}
-
-.product-brand {
-    font-size: 22px; /* Aumentando o tamanho do texto */
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: inline-block;
-}
-
-.product-price {
-    font-size: 20px; /* Aumentando o tamanho do texto */
-    color: #333;
-    font-weight: bold;
-    float: right;
-    margin-bottom: 10px;
-}
-
-.product-description {
-    font-size: 20px; /* Aumentando o tamanho do texto */
-    color: #777;
-    margin-bottom: 15px;
-    clear: both;
-}
-
-.product-stock {
-    font-size: 16px; /* Aumentando o tamanho do texto */
-    color: #28a745; /* Green text for in-stock */
-    margin-bottom: 10px;
-}
-
-.availability {
+    padding: 15px;
     display: flex;
-    gap: 5px;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.availability-item {
-    font-size: 13px; /* Aumentando o tamanho do texto */
+/* Nome do Produto */
+.product-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+/* Preço Antigo (Riscado) */
+.product-baseprice {
+    font-size: 1rem;
+    color: #888;
+    text-decoration: line-through;
+    font-weight: normal; /* Mantém um visual discreto */
+}
+
+/* Preço com Desconto (Destaque) */
+.product-discountedprice {
+    font-size: 1.4rem; /* Fonte maior */
+    font-weight: bold;
+    color: #e63946; /* Vermelho chamativo */
+}
+
+/* Disponibilidade */
+.product-stock {
+    font-size: 0.9rem;
+    color: #28a745; /* Verde para 'Em estoque' */
+}
+
+.product-stock.text-danger {
+    color: #dc3545; /* Vermelho para 'Sem estoque' */
+}
+
+/* Rodapé da descrição */
+.product-description {
+    font-size: 0.85rem;
     color: #666;
-    padding: 4px 8px;
-    border: 1px solid #ccc;
-    border-radius: 15px;
+    text-align: center;
+    margin-top: auto; /* Empurra para o final do card */
+    padding: 10px;
+    background: #f8f9fa;
+    border-top: 1px solid #ddd;
 }
 
+/* Botões de Ação */
 .action-buttons {
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
 }
 
+/* Configuração Padrão para os Botões */
 .action-buttons .btn {
-    font-size: 16px;  /* Tamanho do texto dos botões */
-    padding: 8px 15px;  /* Aumentando o padding para dar mais espaço ao redor do texto */
+    font-size: 1rem;
+    padding: 10px 15px;
     border-radius: 5px;
     text-align: center;
-    width: 30%; /* Os botões ainda compartilham o mesmo espaço */
-    display: flex;  /* Torna os botões flexíveis */
-    justify-content: center;  /* Centraliza o texto no eixo X */
-    align-items: center;  /* Centraliza o texto no eixo Y */
-    height: 100%;  /* Garantir que o botão tenha altura suficiente para centralizar */
+    width: 48%; /* Ambos os botões ficam do mesmo tamanho */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
 }
 
-.edit-btn {
+/* Botão "Adicionar" (Verde) */
+.basket-btn.add-to-cart {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    height: 60px;
+    width: 120px;
+}
+
+.basket-btn.add-to-cart:hover {
+    background-color: #218838;
+}
+
+/* Botão "Comprar Agora" (Azul) */
+.basket-btn.buy-now {
     background-color: #007bff;
     color: white;
     border: none;
+    height: 60px;
+    width: 120px;
 }
 
-.edit-btn:hover {
+.basket-btn.buy-now:hover {
     background-color: #0056b3;
-}
-
-.delete-btn {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-}
-
-.delete-btn:hover {
-    background-color: #a71d2a;
-}
-
-.basket-btn {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-}
-
-.basket-btn:hover {
-    background-color: #5a6268;
 }
 
 /* Container da grade de produtos */
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); /* Ajustado para o novo tamanho mínimo */ 
+    grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); /* Adapta a grade de forma responsiva */
 }
 
-/* Style for each product card */
-.card-container {
-    margin: 0;
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
 }
 
-/* Cartões individuais já têm estilos definidos */
-.product-card {
-    transition: transform 0.2s ease-in-out;
+.pagination .page-item .page-link {
+    color: #333;
+    font-weight: bold;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin: 0 5px;
+    transition: all 0.3s ease-in-out;
 }
 
-.product-card:hover {
-    transform: translateY(-5px);
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
 }

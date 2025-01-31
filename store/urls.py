@@ -5,6 +5,8 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("product_card", views.product_card, name="product_card"),
     path("top_bar", views.top_bar, name="top_bar"),
+    path("top_bar_discount", views.top_bar_discount, name="top_bar_discount"),
+    path("top_bar_accessories", views.top_bar_accessories, name="top_bar_accessories"),
     path("navbar", views.navbar, name="navbar"),
     path("brand/<int:brand_id>/", views.brand, name="brand"),
     path("filter_card", views.filter_card, name="filter_card"),
@@ -24,4 +26,19 @@ urlpatterns = [
     path('add_to_basket/<int:product_id>/', views.add_to_basket, name='add_to_basket'),
     path("order_history", views.order_history, name="order_history"),
     path("logout", views.logout, name="logout"),
+    path("checkout/<int:product_id>/", views.checkout, name="checkout"),
+    path("cart", views.cart, name="cart"),
+    path('add-to-cart/<int:id>/', views.add_to_cart, name='add_to_cart'),
+    path('category_detail/<int:id>/', views.category_detail, name='category_detail'),
+    path('category_detail_discount/<int:id>/', views.category_detail_discount, name='category_detail_discount'),
+    path('category_detail_accessories/<int:id>/', views.category_detail_accessories, name='category_detail_accessories'),
+    path('product_detail/<int:id>/', views.product_detail, name='product_detail'),
+    path('get-cart-items/', views.get_cart_items, name='get_cart_items'),
+    path('remove-from-cart/<int:id>/', views.remove_from_cart, name='remove_from_cart'),
+    
+    
+    ##ADMIN URLS
+    
+    path('adminpage/', views.admin, name='admin'),
+    path('add_content/<str:tablename>/', views.add_content, name='add_content'),
 ]

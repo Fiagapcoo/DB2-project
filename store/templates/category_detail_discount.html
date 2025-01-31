@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% include 'top_bar_discount.html' with categories=categories %}
+<h1>{{ category_name }}</h1>
+{% include "product_card.html" with products=products %}
+{% endblock %}
