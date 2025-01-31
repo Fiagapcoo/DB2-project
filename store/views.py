@@ -34,6 +34,7 @@ def index(request):
         # You might want to redirect to an error page in production
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
+
 def product_card(request):
     return render(request, 'product_card.html')
 
