@@ -1,4 +1,10 @@
 {% extends "sidebar.html" %}
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/add_content.css' %}">
+{% endblock %}
+
 {% block content %}
 <!-- add_content.html -->
 <form method="POST" enctype="multipart/form-data">

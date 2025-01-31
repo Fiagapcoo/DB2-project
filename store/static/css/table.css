@@ -16,12 +16,13 @@
 }
 
 .table th {
-    background-color: #007bff;
-    color: white;
+    background-color: #007bff !important;
+    color: white !important;
     padding: 12px;
-    text-align: left;
+    text-align: center;
     border-bottom: 2px solid #0056b3;
     font-weight: bold;
+    border-right: 3px solid white;
 }
 
 .table td {
@@ -34,62 +35,16 @@
     background-color: #f8f9fa;
 }
 
-/* Image Styling */
-.table-image {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 5px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Pagination Styling */
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.pagination {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 8px;
-}
-
-.pagination .page-item {
-    margin: 0 5px;
-}
-
-.pagination .page-link {
-    color: #333;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    transition: all 0.3s ease-in-out;
-    text-decoration: none;
+.table-name {
+    color: #007bff;
     font-weight: bold;
 }
 
-.pagination .page-link:hover {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-.pagination .active .page-link {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-img{
-    width: 100px !important;
-    height: 100px !important;
-    object-fit: cover;
+/* Image Styling */
+.table-image {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
     border-radius: 5px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }

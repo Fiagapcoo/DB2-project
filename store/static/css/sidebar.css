@@ -1,0 +1,54 @@
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #343a40;
+    padding-top: 20px;
+}
+
+/* Links e botões principais */
+.sidebar a, 
+.sidebar .dropdown-btn {
+    padding: 12px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    display: block;
+    background: none;
+    border: none;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    border-top: 1px solid rgba(255, 255, 255, 0.3); /* Linha superior */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Linha inferior */
+}
+
+/* Remover borda do primeiro e do último elemento */
+.sidebar a:first-child, 
+.sidebar .dropdown-btn:first-of-type {
+    border-top: none;
+}
+
+.sidebar a:last-child {
+    border-bottom: none;
+}
+
+/* Hover effect */
+.sidebar a:hover, 
+.sidebar .dropdown-btn:hover {
+    background-color: #495057;
+}
+
+/* Estilização do container dropdown */
+.dropdown-container {
+    display: none;
+    padding-left: 15px;
+}
+
+/* Conteúdo principal da página */
+.content {
+    margin-left: 260px;
+    padding: 20px;
+}

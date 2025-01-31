@@ -2,14 +2,14 @@
 {% load static %}
 
 {% block head %}
-    <link rel="stylesheet" href="{% static 'css/table.css' %}">
-    <link rel="stylesheet" href="{% static 'css/pagination.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/table.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/pagination.css' %}">
 {% endblock %}
 
 {% block content %}
 
 <!-- Page Title -->
-<h2 class="table-title">Tabela: {{ table_name|title }}</h2>
+<h2 class="table-title">Tabela: <span class="table-name">{{ table_name|title }}</span></h2>
 
 <!-- Table Container -->
 <div class="table-container">

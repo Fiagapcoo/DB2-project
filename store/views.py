@@ -62,7 +62,7 @@ def instruments(request):
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
     # Pagination
-    paginator = Paginator(instruments, 9)  # 9 items per page
+    paginator = Paginator(instruments, 14)  # 14 items per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -73,7 +73,31 @@ def instruments(request):
     return render(request, 'instruments.html', context)
 
 def store(request):
-    return render(request, 'store.html')
+    try:
+        # Check if user is authenticated
+        if request.session.get('user_id') and request.session.get('user_name'):
+
+            categories = []
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM static_content.categories")
+                columns = [col[0] for col in cursor.description]
+                rows = cursor.fetchall()
+                categories = [dict(zip(columns, row)) for row in rows]
+            context = {
+                'categories': categories,
+            }
+            
+            return render(request, 'store.html', context)
+        else:
+            return redirect('login')
+            
+    except KeyError as e:
+        print(f"Session key error: {str(e)}")
+        return redirect('login')
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        # You might want to redirect to an error page in production
+        return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 def top_bar(request):
     with connection.cursor() as cursor:
@@ -151,15 +175,41 @@ def accessories(request):
     return render(request, 'accessories.html', context)
 
 def discount(request):
+    category_id = request.GET.get('categoria', '')  # Obtém a categoria selecionada da URL
+
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p.discountedprice IS NOT null')
-        columns = [col[0] for col in cursor.description]
-        produtos = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.discountedprice IS NOT NULL);')
+        # Buscar categorias para o filtro
+        cursor.execute("SELECT * FROM static_content.categories")
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    
-    context = {'produtos': produtos, 'categories': categories}
+
+        # Construir a query base para produtos com desconto
+        query = '''
+            SELECT * FROM dynamic_content.products p 
+            JOIN dynamic_content.stock s ON s.productid = p.productid  
+            WHERE p.discountedprice IS NOT NULL
+        '''
+        params = []
+
+        # Se o usuário selecionou uma categoria, adicionamos o filtro
+        if category_id:
+            query += " AND p.categoryid = %s"
+            params.append(category_id)
+
+        cursor.execute(query, params)
+        columns = [col[0] for col in cursor.description]
+        produtos = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    # Paginação - 15 produtos por página
+    paginator = Paginator(produtos, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,  # Passamos a página paginada
+        'categories': categories,
+        'selected_category': category_id  # Passar a categoria selecionada para manter no dropdown
+    }
     return render(request, 'discount.html', context)
 
 def delete_product(request, product_id):
@@ -250,30 +300,38 @@ def cart(request):
 
 def category_detail(request, id):
     with connection.cursor() as cursor:
-        # Get products with stock information
+        # Buscar nome da categoria
+        cursor.execute("SELECT name FROM static_content.categories WHERE categoryid = %s", [id])
+        category_name = cursor.fetchone()
+
+        if category_name:
+            category_name = category_name[0]
+        else:
+            category_name = "Categoria Desconhecida"
+
+        # Buscar produtos dessa categoria
         cursor.execute('''
             SELECT * FROM dynamic_content.products p 
-            JOIN dynamic_content.stock s ON s.productid = p.productid 
-            WHERE p.categoryid = %s AND p."producttype" = \'instrument\'
+            JOIN dynamic_content.stock s ON s.productid = p.productid  
+            WHERE p.categoryid = %s
         ''', [id])
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        
-        # Get category name
-        cursor.execute('''
-            SELECT name FROM static_content.categories c 
-            WHERE categoryid = %s
-        ''', [id])
-        category_name = cursor.fetchone()
-        
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'instrument\');')
+
+        # Buscar todas as categorias (para a barra de topo)
+        cursor.execute("SELECT * FROM static_content.categories")
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        
+
+    # Paginação - 15 produtos por página
+    paginator = Paginator(products, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'products': products, 
-        'category_name': category_name[0] if category_name else '',
-        'categories': categories
+        'page_obj': page_obj,  # Passamos a página paginada
+        'category_name': category_name,
+        'categories': categories,
     }
     return render(request, 'category_detail.html', context)
 
