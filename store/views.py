@@ -39,14 +39,36 @@ def product_card(request):
 
 def instruments(request):
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p.producttype = \'instrument\'')
+        # Fetch instruments
+        cursor.execute('''
+            SELECT * FROM dynamic_content.products p 
+            JOIN dynamic_content.stock s ON s.productid = p.productid  
+            WHERE p.producttype = 'instrument'
+        ''')
         columns = [col[0] for col in cursor.description]
         instruments = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'instrument\');')
+
+        # Fetch categories
+        cursor.execute('''
+            SELECT * FROM static_content.categories c 
+            WHERE EXISTS (
+                SELECT 1 FROM dynamic_content.products p 
+                WHERE p.categoryid = c.categoryid 
+                AND p.producttype = 'instrument'
+            );
+        ''')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    
-    context = {'instruments': instruments, 'categories': categories}
+
+    # Pagination
+    paginator = Paginator(instruments, 9)  # 9 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,  # Pass paginated data
+        'categories': categories
+    }
     return render(request, 'instruments.html', context)
 
 def store(request):
