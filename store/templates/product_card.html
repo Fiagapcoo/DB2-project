@@ -23,8 +23,8 @@
     {% if products %}
         {% for product in products %}
         <div class="card-container">
-            <!-- AQUI: Tornamos toda a div clicável para abrir o produto -->
-            <div class="product-card" data-url="{% url 'product_detail' product.productid %}">
+            <div class="product-card {% if product.quantity == 0 %} out-of-stock {% endif %}" 
+                 data-url="{% if product.quantity > 0 %}{% url 'product_detail' product.productid %}{% endif %}">
                 <div class="image-wrapper">
                     <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
                 </div>
@@ -49,16 +49,18 @@
                     {% endif %}
                 
                     <div class="action-buttons">
-                        <button class="btn basket-btn add-to-cart" data-id="{{ product.productid }}" stock="{{ product.quantity }}" onclick="event.stopPropagation();">
+                        <button class="btn basket-btn add-to-cart" data-id="{{ product.productid }}" stock="{{ product.quantity }}" 
+                                onclick="event.stopPropagation();" {% if product.quantity == 0 %} disabled {% endif %}>
                             Adicionar
                         </button>
-                        <a href="{% url 'checkout' product.productid %}" class="btn basket-btn buy-now" onclick="event.stopPropagation();">
+                        <a href="{% url 'checkout' product.productid %}" class="btn basket-btn buy-now" 
+                           onclick="event.stopPropagation();" {% if product.quantity == 0 %} style="pointer-events: none; opacity: 0.5;" {% endif %}>
                             Comprar Agora
                         </a>
                     </div>
                 </div>
             </div>
-        </div>
+        </div>        
         {% endfor %}
     {% else %}
         <div class="no-products-message">
