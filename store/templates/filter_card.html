@@ -15,18 +15,34 @@
     
     <!-- Formulário para o Filtro -->
     <form method="GET" id="filter-form">
+
+        <!-- Campo de Pesquisa -->
+        <div class="mb-3">
+            <label for="search" class="form-label fw-bold">🔍 Pesquisar Produto</label>
+            <input type="text" id="search" name="search" class="form-control" 
+                placeholder="Digite o nome ou número de série..." 
+                value="{{ search_query }}" 
+                onkeypress="if(event.key === 'Enter') document.getElementById('filter-form').submit();">
+        </div>
+
+
         <!-- Dropdown de Categorias -->
-        <label for="categoria" class="form-label fw-bold">📂 Categoria</label>
-        <select id="categoria" name="categoria" class="form-select" onchange="document.getElementById('filter-form').submit();">
-            <option value="">Todas as Categorias</option>
-            {% for categoria in categories %}
-                <option value="{{ categoria.categoryid }}" {% if categoria.categoryid|stringformat:"s" == selected_category %}selected{% endif %}>
-                    {{ categoria.name }}
-                </option>
-            {% endfor %}
-        </select>
+        {% if not category_name %}
+            <!-- Dropdown de Categorias (somente se NÃO estiver na página de detalhe da categoria) -->
+            <label for="categoria" class="form-label fw-bold">📂 Categoria</label>
+            <select id="categoria" name="categoria" class="form-select" onchange="document.getElementById('filter-form').submit();">
+                <option value="">Todas as Categorias</option>
+                {% for categoria in categories %}
+                    <option value="{{ categoria.categoryid }}" {% if categoria.categoryid|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ categoria.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        {% endif %}
+
     
         <!-- Slider de Preço Dinâmico -->
+    
         <div class="mb-3">
             <label for="price-range" class="form-label fw-bold">💰 Faixa de Preço</label>
             <div id="price-slider" class="mt-2"></div>
@@ -36,8 +52,8 @@
                 <input type="text" id="max-value" name="max_price" class="price-input form-control text-center fw-bold" readonly value="{{ max_price }}">
             </div>
         </div>
-
-        <!-- Filtro de Estoque 
+        
+        <!-- Filtro de Estoque -->
         <div class="mb-3">
             <label class="form-label fw-bold">📦 Disponibilidade</label>
             <select id="stock" name="stock" class="form-select" onchange="document.getElementById('filter-form').submit();">
@@ -45,11 +61,11 @@
                 <option value="in_stock" {% if selected_stock == 'in_stock' %}selected{% endif %}>Em Estoque</option>
                 <option value="out_of_stock" {% if selected_stock == 'out_of_stock' %}selected{% endif %}>Sem Estoque</option>
             </select>
-        </div> -->
+        </div>
 
         <!-- Botão de Reset -->
         <div class="d-grid">
-            <a href="{% url 'discount' %}" class="btn btn-secondary">🔄 Resetar Filtros</a>
+            <a href="{{ request.path }}" class="btn btn-secondary">🔄 Resetar Filtros</a>
         </div>
 
         <!-- Filtro por Avaliação
@@ -100,23 +116,49 @@ document.addEventListener('DOMContentLoaded', function () {
     const priceSlider = document.getElementById('price-slider');
 
     if (priceSlider) {
+        // Pegamos os valores vindos do backend e os convertamos corretamente para números
+        let minPrice = parseFloat("{{ min_db_price }}") || 0;
+        let maxPrice = parseFloat("{{ max_db_price }}") || 5000;  // Se não houver um valor, usamos um padrão
+
+        let selectedMinPrice = parseFloat("{{ min_price }}") || minPrice;
+        let selectedMaxPrice = parseFloat("{{ max_price }}") || maxPrice;
+
+        console.log("Valores do Slider - Min:", minPrice, "Max:", maxPrice);
+        console.log("Valores Selecionados - Min:", selectedMinPrice, "Max:", selectedMaxPrice);
+
+        // Criando o slider
         noUiSlider.create(priceSlider, {
-            start: [300, 1200], 
-            connect: true,
-            range: { 'min': 0, 'max': 5000 },
+            start: [selectedMinPrice, selectedMaxPrice], // Valores iniciais
+            connect: true, // Mostra o preenchimento entre os valores mínimo e máximo
+            range: { 'min': minPrice, 'max': maxPrice }, // Faixa de valores possíveis
+            tooltips: true, // Mostra os valores quando movemos os sliders
+            step: 1, // Ajuste de 1 em 1
             format: {
-                to: (value) => `${Math.round(value)}€`,
-                from: (value) => Number(value.replace('€', ''))
+                to: function (value) {
+                    return `${Math.round(value)}€`;
+                },
+                from: function (value) {
+                    return Number(value.replace('€', ''));
+                }
             }
         });
 
+        // Pegamos os campos de input escondidos para atualizar os valores escolhidos
         const minValueDisplay = document.getElementById("min-value");
         const maxValueDisplay = document.getElementById("max-value");
 
+        // Atualizamos os inputs quando o usuário mexe no slider
         priceSlider.noUiSlider.on('update', function (values) {
-            minValueDisplay.value = values[0];
-            maxValueDisplay.value = values[1];
+            minValueDisplay.value = values[0].replace('€', '');
+            maxValueDisplay.value = values[1].replace('€', '');
         });
+
+        // Quando o usuário soltar o slider, o formulário será enviado automaticamente
+        priceSlider.noUiSlider.on('change', function () {
+            document.getElementById('filter-form').submit();
+        });
+    } else {
+        console.error("Elemento #price-slider não encontrado!");
     }
 });
 
