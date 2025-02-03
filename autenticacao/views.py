@@ -3,13 +3,17 @@ from .models import *
 from django.db import connection
 from django.contrib.auth.forms import UserCreationForm
 from encryption.encrypt_decrypt import encrypt_string
-from encryption.encrypt_decrypt import encrypt_string, decrypt_string
 from django.contrib import messages
 from cryptography.fernet import InvalidToken
+from email_handler.email import gerar_codigo_recuperacao,enviar_email_recuperacao
+from django.http import JsonResponse
 
 # Create your views here.
 
 def index(request):
+    if request.session.get('user_id'):
+        return redirect('http://127.0.0.1:8000/store')
+
     return redirect('login')
 
 
@@ -41,9 +45,9 @@ def login(request):
             user_id, name, email, hashed_password = user
 
             try:
-                # Decrypt and check the password
-                decrypted_password = decrypt_string(hashed_password)
-                if input_password == decrypted_password:
+                # Encript and compare to password
+                comparador = encrypt_string(input_password)
+                if hashed_password == comparador:
                     # Store user details in the session
                     request.session['user_id'] = user_id
                     request.session['user_name'] = name
@@ -63,6 +67,10 @@ def login(request):
 
 
 def register(request):
+
+    if request.session.get("user_id"):
+            return redirect('store')
+
     context = {}
     if request.method == 'POST':
         try:
@@ -76,7 +84,9 @@ def register(request):
             with connection.cursor() as cursor:
                 cursor.execute("CALL HR.InsertUser(%s, %s, %s, %s)", [full_name, phone_number, email, password])
 
-            context['registration_success'] = True
+                messages.success(request, 'Conta criada com sucesso')
+
+            return redirect("index") 
 
         except Exception as e:
             context['registration_error'] = str(e)
@@ -84,11 +94,21 @@ def register(request):
     return render(request, 'register.html', context)
 
 def password_recovery(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        # Aqui você implementaria a lógica de envio de email com OTP
-        return render(request, 'password_recovery.html')
-    return render(request, 'password_recovery.html')
+    if request.method == "POST":
+        email = request.POST.get("email")
+        
+        if not email:
+            return JsonResponse({"success": False, "error": "Email é obrigatório"}, status=400)
+        
+        # Geração e envio do código
+        codigo = gerar_codigo_recuperacao()
+        enviar_email_recuperacao(email, codigo)
+
+        # Sempre retornar JSON quando for POST
+        return JsonResponse({"success": True})
+
+    # Para GET, renderiza o template
+    return render(request, "password_recovery.html")
 
 def reset_password(request):
     if request.method == 'POST':
