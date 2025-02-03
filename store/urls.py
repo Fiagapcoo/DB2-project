@@ -24,6 +24,7 @@ urlpatterns = [
     path('delete_product/<int:product_id>/', views.delete_product, name='delete_product'),
     path('add_to_basket/<int:product_id>/', views.add_to_basket, name='add_to_basket'),
     path("order_history", views.order_history, name="order_history"),
+    path('order_details/<int:order_id>/', views.order_details, name='order_details'),
     path("logout", views.logout, name="logout"),
     path("checkout/<int:product_id>/", views.checkout, name="checkout"),
     path("cart", views.cart, name="cart"),
@@ -34,6 +35,7 @@ urlpatterns = [
     path('product_detail/<int:id>/', views.product_detail, name='product_detail'),
     path('get-cart-items/', views.get_cart_items, name='get_cart_items'),
     path('remove-from-cart/<int:id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('get-product-info/<int:product_id>/', views.get_product_info, name='get_product_info'),
     
     
     ##ADMIN URLS

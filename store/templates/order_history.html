@@ -2,35 +2,66 @@
 
 {% block content %}
     <div class="container mt-5">
-        <h1 class="text-center">Histórico de Vendas</h1>
+        <h1 class="text-center mb-4">📦 Histórico de Vendas</h1>
 
         {% if user_orders %}
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-hover mt-4">
-                    <thead class="thead-dark">
+                <table class="table table-bordered table-striped table-hover shadow-sm">
+                    <thead class="thead-dark bg-dark text-white">
                         <tr>
-                            <th>ID do Pedido</th>
-                            <th>ID do Usuário</th>
-                            <th>Código da Transação</th>
-                            <th>Status</th>
-                            <th>Conteúdo do Carrinho</th>
+                            <th class="text-center">ID do Pedido</th>
+                            <th class="text-center">Código da Transação</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Detalhes</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for order in user_orders %}
-                            <tr>
-                                <td>{{ order.0 }}</td>
-                                <td>{{ order.1 }}</td>
-                                <td>{{ order.2 }}</td>
-                                <td>{{ order.3 }}</td>
-                                <td>{{ order.4 }}</td>
-                            </tr>
+                                <tr>
+                                    {% if forloop.first %}
+                                        <td class="text-center fw-bold" rowspan="{{ order.4.items|length }}">{{ order.0 }}</td>
+                                        <td class="text-center text-primary" rowspan="{{ order.4.items|length }}">{{ order.2 }}</td>
+                                        <td class="text-center" rowspan="{{ order.4.items|length }}">
+                                            {% if order.3 == "Completed" %}
+                                                <span class="badge bg-success">✅ Concluído</span>
+                                            {% elif order.3 == "Pending" %}
+                                                <span class="badge bg-warning text-dark">⏳ Pendente</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">❌ Outro</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                    
+                                    <td class="text-center">
+                                        <a href="{% url 'order_details' order.0 %}" class="btn btn-info btn-sm">🔍 Ver Detalhes</a>
+                                    </td>                                    
+                                </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         {% else %}
-            <p class="text-center text-muted">Não há pedidos disponíveis no momento.</p>
+            <div class="alert alert-info text-center mt-4">
+                <p class="mb-0">⚠️ Não há pedidos disponíveis no momento.</p>
+            </div>
         {% endif %}
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const productElements = document.querySelectorAll("[id^=product-name-]");
+
+            productElements.forEach(el => {
+                let productId = el.id.split("-")[2];
+                
+                fetch(`/get-product-info/${productId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById(`product-name-${productId}`).textContent = data.name;
+                        document.getElementById(`product-img-${productId}`).src = data.image_url;
+                    })
+                    .catch(error => console.error("Erro ao buscar produto:", error));
+            });
+        });
+    </script>
 {% endblock %}

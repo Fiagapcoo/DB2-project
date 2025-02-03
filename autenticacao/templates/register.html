@@ -6,6 +6,12 @@
 {% load static %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'autenticacao/css/RegisterStyle.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<!-- Adicionar os atributos data-success e data-error no body -->
+<body data-success="{% if registration_success %}true{% else %}false{% endif %}" 
+      data-error="{% if registration_error %}true{% else %}false{% endif %}">
+
 
 <div class="content-wrapper">
     <div class="register-container">
@@ -36,13 +42,18 @@
             
             <div class="form-group password-input-container">
                 <div class="input-group-password">
-                    <input type="password" id="password" name="password" placeholder="Palavra-passe" required pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$" title="A palavra-passe deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula e um símbolo especial">
+                    <input type="password" id="password" name="password" placeholder="Palavra-passe" required 
+                        pattern="^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$"
+                        title="A palavra-passe deve ter pelo menos 8 caracteres, incluindo uma letra maiúscula e um símbolo especial">
+                    
+                    <!-- Ícone do olho para alternar a visibilidade da senha -->
                     <span class="toggle-password">
-                        <i class="fas fa-eye-slash"></i>
+                        <i class="fa-solid fa-eye-slash"></i>
                     </span>
                 </div>
                 <small class="password-hint">A palavra-passe deve conter pelo menos 8 caracteres, incluindo uma letra maiúscula e um símbolo especial</small>
             </div>
+            
     
             <div class="form-group terms-group d-flex align-items-center">
                 <div class="custom-checkbox mr-2">
@@ -60,7 +71,6 @@
     </div>
     <div class="image-container"></div>
 </div>
-{% endblock %}
 
 <!-- Modal de Sucesso após criação da conta -->
 <div id="successModal" class="modal" style="display:none;">
@@ -69,7 +79,7 @@
             <h2>Conta Criada com Sucesso</h2>
         </div>
         <div class="modal-body">
-            <p>A sua conta foi criada com sucesso! Um email de boas-vindas foi-lhe enviado para o endereço registado.</p>
+            <p>Conta criada com sucesso! Um email de boas-vindas foi-lhe enviado para o endereço registado.</p>
             <p>Por favor, verifique o seu email para mais detalhes.</p>
         </div>
         <div class="modal-footer">
@@ -89,41 +99,11 @@
             <p>Se o problema persistir, entre em contato com o suporte.</p>
         </div>
         <div class="modal-footer">
-            <button onclick="closeErrorModal()" class="close-button">Fechar</button>
-<!-- Success Modal -->
-<div id="successModal" class="modal fade" tabindex="-1" role="dialog" data-show="{{ registration_success|yesno:'true,false'|lower }}">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Conta Criada com Sucesso</h2>
-            </div>
-            <div class="modal-body">
-                <p>Sua conta foi criada com sucesso! Um email de boas-vindas foi enviado para o endereço cadastrado.</p>
-                <p>Por favor, verifique seu email para mais detalhes.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="closeModalBtn" class="login-button" data-login-url="{% url 'login' %}">Fazer Login</button>
-            </div>
+            <button id="closeErrorModalBtn" class="close-button">Fechar</button>
         </div>
     </div>
 </div>
 
-<!-- Error Modal -->
-<div id="errorModal" class="modal fade" tabindex="-1" role="dialog" data-show="{% if registration_error %}true{% else %}false{% endif %}">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Erro ao Criar Conta</h2>
-            </div>
-            <div class="modal-body">
-                <p id="errorMessage">{{ registration_error }}</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="close-button">Fechar</button>
-            </div>
-        </div>
-    </div>
-</div>
+</body>
 
-<!-- Include your JavaScript file -->
-<script src="{% static 'autenticacao/js/register.js' %}"></script>
+{% endblock %}
