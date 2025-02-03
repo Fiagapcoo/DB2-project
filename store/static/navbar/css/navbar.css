@@ -26,7 +26,7 @@ body {
     justify-content: space-between;
     align-items: center;
     position: absolute;
-    top: 20px; /* Mantém os links no topo */
+    top: 30px; /* Mantém os links no topo */
 }
 
 .nav-categories {
@@ -54,7 +54,7 @@ body {
     display: flex;
     gap: 20px;
     position: absolute;
-    right: 20px;
+    right: 40px;
     top: 50%;
     transform: translateY(-50%);
 }
