@@ -9,11 +9,10 @@
                 <table class="table table-bordered table-striped table-hover shadow-sm">
                     <thead class="thead-dark bg-dark text-white">
                         <tr>
-                            <th>ID do Pedido</th>
-                            <th>ID do Usuário</th>
-                            <th>Código da Transação</th>
-                            <th>Status</th>
-                            <th>Detalhes</th>
+                            <th class="text-center">ID do Pedido</th>
+                            <th class="text-center">Código da Transação</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Detalhes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -21,7 +20,6 @@
                                 <tr>
                                     {% if forloop.first %}
                                         <td class="text-center fw-bold" rowspan="{{ order.4.items|length }}">{{ order.0 }}</td>
-                                        <td class="text-center" rowspan="{{ order.4.items|length }}">{{ order.1 }}</td>
                                         <td class="text-center text-primary" rowspan="{{ order.4.items|length }}">{{ order.2 }}</td>
                                         <td class="text-center" rowspan="{{ order.4.items|length }}">
                                             {% if order.3 == "Completed" %}

@@ -31,7 +31,9 @@
                     {% for item in order.items %}
                         <div class="product-card">
                             <img id="product-img-{{ item.product_id }}" alt="Produto">
-                            <h5 id="product-name-{{ item.product_id }}">Carregando...</h5>
+                            <a href="{% url 'product_detail' item.product_id %}" class="text-dark">
+                                <h5 id="product-name-{{ item.product_id }}">Carregando...</h5>
+                            </a>
                             <div class="product-details">
                                 <p class="product-quantity">Quantidade: {{ item.quantity }}</p>
                             </div>
