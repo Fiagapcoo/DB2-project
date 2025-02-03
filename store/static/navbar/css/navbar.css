@@ -21,7 +21,7 @@ body {
 }
 
 .navbar-content {
-    width: 90%;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -54,7 +54,7 @@ body {
     display: flex;
     gap: 20px;
     position: absolute;
-    right: 10px; /* Mantém os ícones no canto direito */
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
 }
