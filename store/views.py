@@ -63,7 +63,7 @@ def instruments(request):
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
     # Pagination
-    paginator = Paginator(instruments, 14)  # 14 items per page
+    paginator = Paginator(instruments, 15)  # 15 items per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -355,9 +355,41 @@ def order_history(request):
     context = {'user_orders': user_orders}
     return render(request, 'order_history.html', context)
 
+def order_details(request, order_id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM transactions.orders WHERE orderid = %s", [order_id])
+        order = cursor.fetchone()
+
+        cursor.execute("SELECT paymentmethod, amount FROM transactions.payments WHERE orderid = %s", [order_id])
+        payment = cursor.fetchone()
+
+    if order:
+        try:
+            # Verifica se order[4] já é um dicionário
+            items_data = order[4]
+            if isinstance(items_data, str):  
+                items_data = json.loads(items_data)  # Converte apenas se for string
+            
+            order_data = {
+                "id": order[0],
+                "transaction_code": order[2],
+                "status": order[3],
+                "items": items_data["items"],
+                "payment_method": payment[0] if payment else "Desconhecido",
+                "amount": payment[1] if payment else "0.00"
+            }
+        except (json.JSONDecodeError, KeyError, TypeError):
+            order_data = {"id": order[0], "transaction_code": order[2], "status": order[3], "items": []}
+    else:
+        order_data = None
+
+    return render(request, 'order_details.html', {"order": order_data})
+
 def logout(request):
     request.session.flush()
-    return redirect('login')
+    response = redirect('login')
+    response.delete_cookie('cart')
+    return response
 
 def order_history(request):
     
@@ -375,11 +407,6 @@ def order_history(request):
 
     context = {'user_orders': user_orders}
     return render(request, 'order_history.html', context)
-
-def logout(request):
-    request.session.flush()
-    return redirect('login')
-
 
 def checkout(request, product_id):
    with connection.cursor() as cursor:
@@ -779,3 +806,13 @@ def adminview(request, tablename):
     }
     
     return render(request, 'adminview.html', context)
+
+
+def get_product_info(request, product_id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT name, image_url FROM dynamic_content.products WHERE productid = %s", [product_id])
+        row = cursor.fetchone()
+        if row:
+            return JsonResponse({"name": row[0], "image_url": row[1]})
+        else:
+            return JsonResponse({"name": "Produto não encontrado", "image_url": "/static/images/not-found.png"}, status=404)
