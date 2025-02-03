@@ -30,9 +30,11 @@
 
             <!-- Dropdown para o Ícone do Perfil -->
             <div class="dropdown">
-                <i class="bi bi-person icon" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false"></i>
+                <a href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person icon"></i>
+                </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    <li><a class="dropdown-item" href="order_history">Histórico de Vendas</a></li>
+                    <li><a class="dropdown-item" href="{% url 'order_history' %}">Histórico de Vendas</a></li>
                     <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>
             </div>
