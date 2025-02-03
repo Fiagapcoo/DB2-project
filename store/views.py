@@ -567,8 +567,11 @@ def add_to_cart(request, id, stock):
         else:
             response = JsonResponse({'message': 'Produto não adicionado ao carrinho devido à falta de stock', 'cart': cart})
     else:
-        cart[id] = 1
-        response = JsonResponse({'message': 'Produto adicionado ao carrinho', 'cart': cart})
+        if stock > 0:
+            cart[id] = 1
+            response = JsonResponse({'message': 'Produto adicionado ao carrinho', 'cart': cart})
+        else:
+            response = JsonResponse({'message': 'Produto não adicionado ao carrinho devido à falta de stock', 'cart': cart})
     cart_json = json.dumps(cart, separators=(',', ':'))
     response.set_cookie('cart', cart_json, path='/', max_age=31536000)
     return response
