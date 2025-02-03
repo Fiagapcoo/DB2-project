@@ -27,7 +27,7 @@
 
 
         <!-- Dropdown de Categorias -->
-        {% if not category_name %}
+        {% if not category_name and request.path != "/accessories" %}
             <!-- Dropdown de Categorias (somente se NÃO estiver na página de detalhe da categoria) -->
             <label for="categoria" class="form-label fw-bold">📂 Categoria</label>
             <select id="categoria" name="categoria" class="form-select" onchange="document.getElementById('filter-form').submit();">
@@ -58,8 +58,8 @@
             <label class="form-label fw-bold">📦 Disponibilidade</label>
             <select id="stock" name="stock" class="form-select" onchange="document.getElementById('filter-form').submit();">
                 <option value="">Todos</option>
-                <option value="in_stock" {% if selected_stock == 'in_stock' %}selected{% endif %}>Em Estoque</option>
-                <option value="out_of_stock" {% if selected_stock == 'out_of_stock' %}selected{% endif %}>Sem Estoque</option>
+                <option value="in_stock" {% if selected_stock == 'in_stock' %}selected{% endif %}>Com Stock</option>
+                <option value="out_of_stock" {% if selected_stock == 'out_of_stock' %}selected{% endif %}>Sem Stock</option>
             </select>
         </div>
 
@@ -67,42 +67,6 @@
         <div class="d-grid">
             <a href="{{ request.path }}" class="btn btn-secondary">🔄 Resetar Filtros</a>
         </div>
-
-        <!-- Filtro por Avaliação
-        <label class="mt-3">Avaliação</label>
-        <div class="rating-filter">
-            <label class="rating-option">
-                <input type="checkbox" name="rating" value="5" class="rating-checkbox">
-                <span class="stars">
-                    ★★★★☆
-                </span>
-            </label>
-            <label class="rating-option">
-                <input type="checkbox" name="rating" value="4" class="rating-checkbox">
-                <span class="stars">
-                    ★★★★☆
-                </span>
-            </label>
-            <label class="rating-option">
-                <input type="checkbox" name="rating" value="3" class="rating-checkbox">
-                <span class="stars">
-                    ★★★☆☆
-                </span>
-            </label>
-            <label class="rating-option">
-                <input type="checkbox" name="rating" value="2" class="rating-checkbox">
-                <span class="stars">
-                    ★★☆☆☆
-                </span>
-            </label>
-            <label class="rating-option">
-                <input type="checkbox" name="rating" value="1" class="rating-checkbox">
-                <span class="stars">
-                    ★☆☆☆☆
-                </span>
-            </label>
-        </div>
-        -->
         
     </form>
 </div>

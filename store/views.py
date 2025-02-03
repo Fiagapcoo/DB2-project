@@ -233,20 +233,81 @@ def new(request):
     return render(request, 'new.html', context)
 
 def accessories(request):
+    page_number = request.GET.get('page')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    stock_filter = request.GET.get('stock', '')
+    search_query = request.GET.get('search', '')
+
     with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM dynamic_content.products p JOIN dynamic_content.stock s ON s.productid = p.productid  WHERE p.producttype = \'accessories\'')
+        # Buscar faixa de preço disponível para acessórios
+        cursor.execute('''
+            SELECT MIN(discountedprice), MAX(discountedprice)
+            FROM dynamic_content.products
+            WHERE producttype = 'accessories' AND discountedprice IS NOT NULL
+        ''')
+        min_db_price, max_db_price = cursor.fetchone()
+
+        # Se os filtros de preço não estiverem preenchidos, usar os valores mínimos e máximos do BD
+        if not min_price:
+            min_price = min_db_price
+        if not max_price:
+            max_price = max_db_price
+
+        # Construindo a query de produtos
+        query = '''
+            SELECT p.*, s.quantity FROM dynamic_content.products p
+            JOIN dynamic_content.stock s ON s.productid = p.productid
+            WHERE p.producttype = 'accessories'
+        '''
+        params = []
+
+        # Aplicando filtro de preço
+        if min_price and max_price:
+            query += " AND p.discountedprice BETWEEN %s AND %s"
+            params.extend([min_price, max_price])
+
+        # Aplicando filtro de estoque
+        if stock_filter == 'in_stock':
+            query += " AND s.quantity > 0"
+        elif stock_filter == 'out_of_stock':
+            query += " AND s.quantity = 0"
+
+        # Aplicando filtro de pesquisa (por nome ou número de série)
+        if search_query:
+            query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
+            params.extend([f"%{search_query}%", f"%{search_query}%"])
+
+        cursor.execute(query, params)
         columns = [col[0] for col in cursor.description]
         accessories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.producttype = \'accessories\');')
+
+        # Buscar categorias relacionadas aos acessórios (Removemos pois a categoria não deve aparecer no filtro)
+        cursor.execute('''
+            SELECT * FROM static_content.categories c
+            WHERE EXISTS (
+                SELECT 1 FROM dynamic_content.products p
+                WHERE p.categoryid = c.categoryid AND p.producttype = 'accessories'
+            )
+        ''')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    
-    context = {'accessories': accessories, 'categories': categories}
-    return render(request, 'accessories.html', context)
 
-from django.db import connection
-from django.core.paginator import Paginator
-from django.shortcuts import render
+    # Aplicando paginação - 15 produtos por página
+    paginator = Paginator(accessories, 15)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'categories': categories,
+        'min_price': min_price,
+        'max_price': max_price,
+        'min_db_price': min_db_price,
+        'max_db_price': max_db_price,
+        'selected_stock': stock_filter,
+        'search_query': search_query,  # Adicionando pesquisa ao contexto
+    }
+    return render(request, 'accessories.html', context)
 
 def discount(request):
     category_id = request.GET.get('categoria', '')
