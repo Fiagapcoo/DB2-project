@@ -77,10 +77,22 @@ body {
 
 /* Estiliza o contador do carrinho */
 #cart-counter {
-    font-size: 14px;
+    font-size: 12px;
     width: 18px;
-    height: 18px;
+    height: 18px;     
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center;     /* Centraliza verticalmente */
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%); /* Posiciona melhor o contador */
+    background-color: red;
+    color: white;
+    border-radius: 50%; /* Garante que é um círculo */
+    font-weight: bold;  /* Deixa o número mais visível */
+    line-height: 1;     /* Garante que o número não fique desalinhado */
+    padding: 2px;       /* Pequeno espaçamento interno */
+    min-width: 18px;    /* Mantém a largura mínima */
 }
+
