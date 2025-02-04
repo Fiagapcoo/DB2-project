@@ -1,5 +1,6 @@
 {% extends "sidebar.html" %}
 {% load static %}
+{% load dict_extras %}
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/table.css' %}">
@@ -7,7 +8,6 @@
 {% endblock %}
 
 {% block content %}
-
 <!-- Page Title -->
 <h2 class="table-title">Tabela: <span class="table-name">{{ table_name|title }}</span></h2>
 
@@ -17,34 +17,38 @@
         <thead>
             <tr>
                 {% for column in columns %}
-                    <th>{{ column|title }}</th>
+                    {% if column != "productid" %}
+                        <th>{{ column|title }}</th>
+                    {% endif %}
                 {% endfor %}
-                <th>Ações</th>  <!-- New column for Edit/Remove buttons -->
+                <th>Ações</th>  <!-- Column for Edit/Remove buttons -->
             </tr>
         </thead>
         <tbody>
             {% for row in page_obj %}
                 <tr>
                     {% for key, value in row.items %}
-                    <td>
-                        {% if key == "image_url" or key == "preview_img" %}
-                            <img src="{{ value }}" alt="Image" class="table-image">
-                        
-                        {% elif key == "ismanager" %}
-                            {% if value == True or value == "True" %}
- 
-                                    ✅ 
-                            {% else %}
-                                    ❌
-                            {% endif %}
-                        {% else %}
-                            {{ value }}
+                        {% if key != "productid" %}
+                            <td>
+                                {% if key == "image_url" or key == "preview_img" %}
+                                    <img src="{{ value }}" alt="Image" class="table-image">
+                                {% elif key == "ismanager" %}
+                                    {% if value == True or value == "True" %}
+                                        ✅ 
+                                    {% else %}
+                                        ❌
+                                    {% endif %}
+                                {% else %}
+                                    {{ value }}
+                                {% endif %}
+                            </td>
                         {% endif %}
-                    </td>
                     {% endfor %}
                     <td>
-                        <a href="#" class="btn btn-edit">✏️ Editar</a>
-                        <a href="#" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
+                        <!-- Edit link: passes the table name and productid -->
+                        <a href="{% url 'edit_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-edit">✏️ Editar</a>
+                        <!-- Delete link: passes the table name and productid -->
+                        <a href="{% url 'delete_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -84,5 +88,4 @@
         </ul>
     </nav>
 </div>
-
 {% endblock %}

@@ -109,3 +109,17 @@ CREATE TRIGGER product_insert_trigger
 AFTER INSERT ON dynamic_content.products
 FOR EACH ROW
 EXECUTE FUNCTION create_stock_on_product_insert();
+
+CREATE OR REPLACE PROCEDURE delete_content(tablename text, content_id integer)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF tablename = 'dynamic_content.products' THEN
+        DELETE FROM dynamic_content.stock 
+        WHERE productid = content_id;
+    END IF;
+
+    EXECUTE 'DELETE FROM ' || quote_ident(tablename) || ' WHERE id = $1'
+    USING content_id;
+END;
+$$;

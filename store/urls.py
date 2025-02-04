@@ -43,4 +43,6 @@ urlpatterns = [
     path('adminpage/', views.admin, name='admin'),
     path('add_content/<str:tablename>/', views.add_content, name='add_content'),
     path('adminview/<str:tablename>/', views.adminview, name='adminview'),
+    path('delete_content/<str:tablename>/delete/<int:id>/', views.delete_content, name='delete_content'),
+    path('edit_content/<str:tablename>/edit/<int:id>/', views.edit_content, name='edit_content'),
 ]

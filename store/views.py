@@ -837,25 +837,21 @@ def add_content(request, tablename):
 
 def adminview(request, tablename):
     with connection.cursor() as cursor:
-        # Fetch table data
+        # Fetch all data from the given table
         cursor.execute(f"SELECT * FROM {tablename}")
         columns = [col[0] for col in cursor.description]
         rows = cursor.fetchall()
 
-        # Remove first column (ID)
-        columns = columns[1:]
-        data = [dict(zip(columns, row[1:])) for row in rows]
+        data = [dict(zip(columns, row)) for row in rows]
 
-        # Fetch category names
+        # Fetch category names and replace the categoryid value if needed
         cursor.execute("SELECT categoryid, name FROM static_content.categories")
-        category_dict = {row[0]: row[1] for row in cursor.fetchall()}  # Convert to dictionary
-
-        # Replace categoryid with category name
+        category_dict = {row[0]: row[1] for row in cursor.fetchall()}
         for item in data:
             if "categoryid" in item and item["categoryid"] in category_dict:
                 item["categoryid"] = category_dict[item["categoryid"]]
 
-    # Pagination (20 rows per page)
+    # Paginate (20 rows per page)
     paginator = Paginator(data, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -867,6 +863,54 @@ def adminview(request, tablename):
     }
     
     return render(request, 'adminview.html', context)
+
+def delete_content(request, tablename, id):
+    with connection.cursor() as cursor:
+        # Delete using the primary key column 'productid'
+        cursor.execute(f"DELETE FROM {tablename} WHERE productid = %s", [id])
+    
+    return redirect('adminview', tablename=tablename)
+
+def edit_content(request, tablename, id):
+    if request.method == "POST":
+        # First, get the list of columns for the table.
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM {tablename} WHERE productid = %s", [id])
+            row = cursor.fetchone()
+            if not row:
+                return HttpResponse("Record not found", status=404)
+            columns = [col[0] for col in cursor.description]
+
+        # Build the UPDATE query using all columns except the primary key.
+        update_columns = []
+        update_values = []
+        for col in columns:
+            if col == "productid":
+                continue
+            update_columns.append(f"{col} = %s")
+            update_values.append(request.POST.get(col, None))
+        update_values.append(id)
+        update_query = f"UPDATE {tablename} SET {', '.join(update_columns)} WHERE productid = %s"
+
+        with connection.cursor() as cursor:
+            cursor.execute(update_query, update_values)
+
+        return redirect('adminview', tablename=tablename)
+    else:
+        # GET: fetch the existing record and display it for editing.
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM {tablename} WHERE productid = %s", [id])
+            row = cursor.fetchone()
+            if not row:
+                return HttpResponse("Record not found", status=404)
+            columns = [col[0] for col in cursor.description]
+            data = dict(zip(columns, row))
+        context = {
+            'table_name': tablename,
+            'data': data,
+            'columns': columns,
+        }
+        return render(request, 'edit_content.html', context)
 
 
 def get_product_info(request, product_id):

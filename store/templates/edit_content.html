@@ -1,0 +1,27 @@
+{% extends "sidebar.html" %}
+{% load static %}
+{% load dict_extras %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/form.css' %}">
+{% endblock %}
+
+{% block content %}
+<h2>Edit Record in {{ table_name|title }}</h2>
+<form method="post">
+    {% csrf_token %}
+    <table>
+        {% for column in columns %}
+            {% if column != "productid" %}
+            <tr>
+                <td><label for="{{ column }}">{{ column|title }}</label></td>
+                <td>
+                    <input type="text" id="{{ column }}" name="{{ column }}" value="{{ data|get_item:column }}">
+                </td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+    <button type="submit">Save</button>
+</form>
+{% endblock %}
