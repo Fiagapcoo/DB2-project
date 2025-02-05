@@ -626,19 +626,28 @@ def category_detail_accessories(request, id):
 def product_detail(request, id):
     with connection.cursor() as cursor:
         cursor.execute('''
-            SELECT * FROM dynamic_content.products p 
+            SELECT p.*, s.*, 
+                   COALESCE(b.brandname, 'Sem Marca') AS brandname
+            FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid 
+            LEFT JOIN dynamic_content.brands b ON b.brandid = p.brandid
             WHERE p.productid = %s
         ''', [id])
-        columns = [col[0] for col in cursor.description]
-        product = dict(zip(columns, cursor.fetchone()))
         
+        row = cursor.fetchone()
+        if row:
+            columns = [col[0] for col in cursor.description]
+            product = dict(zip(columns, row))
+        else:
+            product = None
+
         cursor.execute('SELECT * FROM static_content.categories')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
         
     context = {'product': product, 'categories': categories}
     return render(request, 'product_detail.html', context)
+
 
 def add_to_cart(request, id, stock):
     cart_cookie = request.COOKIES.get('cart', '{}')

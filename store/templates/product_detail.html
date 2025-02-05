@@ -98,8 +98,7 @@
 
     <div class="col-md-6 product-details">
       <h2>{{ product.name }}</h2>
-      <p><strong>Brand:</strong> Harley Benton</p>
-
+      <p><strong>Brand: </strong>{{ product.brandname }}</p>
       <p class="price mt-3">
         {% if product.discountedprice %}
         <span class="original-price">€{{ product.baseprice }}</span>
@@ -124,6 +123,7 @@
       <button
         class="btn btn-add-cart w-100 p-2 add-to-cart"
         data-id="{{ product.productid }}"
+        stock="{{ product.quantity }}"
         {%
         if
         product.quantity
@@ -145,7 +145,8 @@
         event.preventDefault();
 
         let productId = this.getAttribute("data-id");
-        let url = `/add-to-cart/${productId}/`;
+        let stock = this.getAttribute("stock");
+        let url = `/add-to-cart/${productId}/${stock}/`;
 
         console.log(`Botão clicado! Enviando requisição para: ${url}`);
 
@@ -163,7 +164,7 @@
           })
           .then((data) => {
             console.log("Resposta da API:", data);
-            alert("Produto adicionado ao carrinho! 🛒");
+            alert(data.message);
 
             let cartCountElement = document.getElementById("cart-count");
             if (cartCountElement) {
