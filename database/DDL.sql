@@ -170,3 +170,12 @@ CREATE TABLE PROMOS.Promotions (
     CONSTRAINT fk_promos_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID) ON DELETE SET NULL,
     CONSTRAINT fk_promos_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID) ON DELETE SET NULL
 );
+
+CREATE TABLE CONTROL.codigos_recuperacao (
+
+    codID SERIAL PRIMARY KEY,
+    criacao TIMESTAMP,
+    codigo INT,
+    CONSTRAINT fk_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE,
+
+)
