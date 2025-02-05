@@ -13,7 +13,7 @@
     <div class="row">
         <!-- Coluna do filtro -->
         <div class="col-md-3">
-            {% include 'filter_card.html' %}
+            {% include 'filter_card.html' with categories=categories selected_category=id brands=brands selected_brand=selected_brand selected_discount=selected_discount %}
         </div>
 
         <!-- Coluna dos produtos -->

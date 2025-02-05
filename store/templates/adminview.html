@@ -30,19 +30,21 @@
                 <tr>
                     {% for key, value in row.items %}
                         {% if key != "productid" and key != "categoryid" %}
-                            <td>
-                                {% if key == "image_url" or key == "preview_img" %}
-                                    <img src="{{ value }}" alt="Image" class="table-image">
-                                {% elif key == "ismanager" %}
-                                    {% if value == True or value == "True" %}
-                                        ✅ 
-                                    {% else %}
-                                        ❌
-                                    {% endif %}
+                        <td>
+                            {% if key == "categoryid" %}
+                                {{ value }}
+                            {% elif key == "image_url" or key == "preview_img" %}
+                                <img src="{{ value }}" alt="Image" class="table-image">
+                            {% elif key == "ismanager" %}
+                                {% if value == True or value == "True" %}
+                                    ✅ 
                                 {% else %}
-                                    {{ value }}
+                                    ❌
                                 {% endif %}
-                            </td>
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
                         {% endif %}
                     {% endfor %}
                     <td>

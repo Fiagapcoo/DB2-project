@@ -162,6 +162,7 @@ def brands_page(request):
 
 def new(request):
     category_id = request.GET.get('categoria', '')
+    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
@@ -173,8 +174,27 @@ def new(request):
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Buscar faixa de preço disponível
-        cursor.execute("SELECT MIN(discountedprice), MAX(discountedprice) FROM dynamic_content.products WHERE discountedprice IS NOT NULL")
+        # Buscar marcas associadas aos últimos 20 produtos adicionados
+        cursor.execute("""
+            SELECT DISTINCT ON (b.brandid) b.brandid, b.brandname
+            FROM dynamic_content.products p
+            JOIN dynamic_content.brands b ON p.brandid = b.brandid
+            ORDER BY b.brandid, p.productid DESC
+        """)
+        columns = [col[0] for col in cursor.description]
+        brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        # Buscar faixa de preço disponível nos últimos 20 produtos adicionados
+        cursor.execute("""
+            SELECT MIN(COALESCE(discountedprice, baseprice)), 
+                   MAX(COALESCE(discountedprice, baseprice)) 
+            FROM (
+                SELECT discountedprice, baseprice 
+                FROM dynamic_content.products 
+                ORDER BY productid DESC 
+                LIMIT 20
+            ) AS subquery
+        """)
         min_db_price, max_db_price = cursor.fetchone()
 
         if not min_price:
@@ -182,11 +202,12 @@ def new(request):
         if not max_price:
             max_price = max_db_price
 
-        # Construir a query base
+        # Construir a query base para buscar os últimos 20 produtos
         query = '''
-            SELECT p.*, s.quantity FROM dynamic_content.products p 
+            SELECT p.*, s.quantity 
+            FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid  
-            WHERE p.discountedprice IS NOT NULL
+            WHERE 1=1
         '''
         params = []
 
@@ -195,9 +216,14 @@ def new(request):
             query += " AND p.categoryid = %s"
             params.append(category_id)
 
+        # Filtro de marca
+        if brand_id:
+            query += " AND p.brandid = %s"
+            params.append(brand_id)
+
         # Filtro de preço
         if min_price and max_price:
-            query += " AND p.discountedprice BETWEEN %s AND %s"
+            query += " AND COALESCE(p.discountedprice, p.baseprice) BETWEEN %s AND %s"
             params.extend([min_price, max_price])
 
         # Filtro de estoque
@@ -206,7 +232,7 @@ def new(request):
         elif stock_filter == 'out_of_stock':
             query += " AND s.quantity = 0"
 
-        # Filtro de pesquisa
+        # Filtro de pesquisa (nome ou número de série)
         if search_query:
             query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query}%"])
@@ -226,7 +252,9 @@ def new(request):
     context = {
         'page_obj': page_obj,
         'categories': categories,
+        'brands': brands,  # Passamos a lista de marcas para o template
         'selected_category': category_id,
+        'selected_brand': brand_id,  # Marca selecionada
         'min_price': min_price,
         'max_price': max_price,
         'min_db_price': min_db_price,
@@ -242,13 +270,15 @@ def accessories(request):
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
     search_query = request.GET.get('search', '')
+    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
+    discount_filter = request.GET.get('desconto', '')  # Novo filtro de desconto
 
     with connection.cursor() as cursor:
-        # Buscar faixa de preço disponível para acessórios
+        # Buscar faixa de preço disponível para acessórios (considerando todos os produtos)
         cursor.execute('''
-            SELECT MIN(discountedprice), MAX(discountedprice)
+            SELECT MIN(COALESCE(discountedprice, baseprice)), MAX(COALESCE(discountedprice, baseprice))
             FROM dynamic_content.products
-            WHERE producttype = 'accessories' AND discountedprice IS NOT NULL
+            WHERE producttype = 'accessories'
         ''')
         min_db_price, max_db_price = cursor.fetchone()
 
@@ -258,6 +288,17 @@ def accessories(request):
         if not max_price:
             max_price = max_db_price
 
+        # Buscar marcas disponíveis nos acessórios
+        cursor.execute("""
+            SELECT DISTINCT b.brandid, b.brandname
+            FROM dynamic_content.products p
+            JOIN dynamic_content.brands b ON p.brandid = b.brandid
+            WHERE p.producttype = 'accessories'
+            ORDER BY b.brandname
+        """)
+        columns = [col[0] for col in cursor.description]
+        brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
         # Construindo a query de produtos
         query = '''
             SELECT p.*, s.quantity FROM dynamic_content.products p
@@ -266,9 +307,20 @@ def accessories(request):
         '''
         params = []
 
+        # Aplicando filtro de marca
+        if brand_id:
+            query += " AND p.brandid = %s"
+            params.append(brand_id)
+
+        # Aplicando filtro de desconto
+        if discount_filter == "com_desconto":
+            query += " AND p.discountedprice IS NOT NULL"
+        elif discount_filter == "sem_desconto":
+            query += " AND p.discountedprice IS NULL"
+
         # Aplicando filtro de preço
         if min_price and max_price:
-            query += " AND p.discountedprice BETWEEN %s AND %s"
+            query += " AND COALESCE(p.discountedprice, p.baseprice) BETWEEN %s AND %s"
             params.extend([min_price, max_price])
 
         # Aplicando filtro de estoque
@@ -286,35 +338,28 @@ def accessories(request):
         columns = [col[0] for col in cursor.description]
         accessories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Buscar categorias relacionadas aos acessórios (Removemos pois a categoria não deve aparecer no filtro)
-        cursor.execute('''
-            SELECT * FROM static_content.categories c
-            WHERE EXISTS (
-                SELECT 1 FROM dynamic_content.products p
-                WHERE p.categoryid = c.categoryid AND p.producttype = 'accessories'
-            )
-        ''')
-        columns = [col[0] for col in cursor.description]
-        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-
     # Aplicando paginação - 15 produtos por página
     paginator = Paginator(accessories, 15)
     page_obj = paginator.get_page(page_number)
 
     context = {
         'page_obj': page_obj,
-        'categories': categories,
+        'brands': brands,  # Passando as marcas disponíveis
+        'selected_brand': brand_id,  # Marca selecionada
         'min_price': min_price,
         'max_price': max_price,
         'min_db_price': min_db_price,
         'max_db_price': max_db_price,
         'selected_stock': stock_filter,
+        'selected_discount': discount_filter,  # Desconto selecionado
         'search_query': search_query,  # Adicionando pesquisa ao contexto
     }
     return render(request, 'accessories.html', context)
 
+
 def discount(request):
     category_id = request.GET.get('categoria', '')
+    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
@@ -325,6 +370,17 @@ def discount(request):
         cursor.execute("SELECT * FROM static_content.categories")
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        # Buscar marcas presentes nos produtos em desconto
+        cursor.execute("""
+            SELECT DISTINCT b.brandid, b.brandname
+            FROM dynamic_content.products p
+            JOIN dynamic_content.brands b ON p.brandid = b.brandid
+            WHERE p.discountedprice IS NOT NULL
+            ORDER BY b.brandname
+        """)
+        columns = [col[0] for col in cursor.description]
+        brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
         # Buscar faixa de preço disponível
         cursor.execute("SELECT MIN(discountedprice), MAX(discountedprice) FROM dynamic_content.products WHERE discountedprice IS NOT NULL")
@@ -347,6 +403,11 @@ def discount(request):
         if category_id:
             query += " AND p.categoryid = %s"
             params.append(category_id)
+
+        # Filtro de marca
+        if brand_id:
+            query += " AND p.brandid = %s"
+            params.append(brand_id)
 
         # Filtro de preço
         if min_price and max_price:
@@ -376,16 +437,18 @@ def discount(request):
     context = {
         'page_obj': page_obj,
         'categories': categories,
+        'brands': brands,  # Passa as marcas corretamente para o template
         'selected_category': category_id,
+        'selected_brand': brand_id,  # Adiciona a marca selecionada
         'min_price': min_price,
         'max_price': max_price,
         'min_db_price': min_db_price,
         'max_db_price': max_db_price,
         'selected_stock': stock_filter,
-        'search_query': search_query  # Passa a pesquisa para o template
+        'search_query': search_query,  # Passa a pesquisa para o template
+        'is_discount_page': True  # Define que estamos na página de descontos
     }
     return render(request, 'discount.html', context)
-
 
 def delete_product(request, product_id):
     # Logic for deleting the product goes here
@@ -505,6 +568,8 @@ def category_detail(request, id):
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
     search_query = request.GET.get('search', '')
+    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
+    discount_filter = request.GET.get('desconto', '')  # Novo filtro para descontos
 
     with connection.cursor() as cursor:
         # Buscar nome da categoria
@@ -516,11 +581,11 @@ def category_detail(request, id):
         else:
             category_name = "Categoria Desconhecida"
 
-        # Buscar a faixa de preço disponível nesta categoria
+        # Buscar a faixa de preço disponível nesta categoria (sem filtrar apenas os com desconto)
         cursor.execute('''
-            SELECT MIN(discountedprice), MAX(discountedprice) 
+            SELECT MIN(COALESCE(discountedprice, baseprice)), MAX(COALESCE(discountedprice, baseprice)) 
             FROM dynamic_content.products 
-            WHERE categoryid = %s AND discountedprice IS NOT NULL
+            WHERE categoryid = %s
         ''', [id])
         min_db_price, max_db_price = cursor.fetchone()
 
@@ -529,7 +594,18 @@ def category_detail(request, id):
         if not max_price:
             max_price = max_db_price
 
-        # Construir a query base para produtos desta categoria
+        # Buscar marcas dos produtos dentro desta categoria
+        cursor.execute("""
+            SELECT DISTINCT b.brandid, b.brandname 
+            FROM dynamic_content.products p 
+            JOIN dynamic_content.brands b ON p.brandid = b.brandid 
+            WHERE p.categoryid = %s
+            ORDER BY b.brandname
+        """, [id])
+        columns = [col[0] for col in cursor.description]
+        brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        # Construir a query base para produtos desta categoria (sem filtro fixo de desconto)
         query = '''
             SELECT p.*, s.quantity FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid  
@@ -537,9 +613,14 @@ def category_detail(request, id):
         '''
         params = [id]
 
+        # Aplicar filtro de marca
+        if brand_id:
+            query += " AND p.brandid = %s"
+            params.append(brand_id)
+
         # Aplicar filtro de preço
         if min_price and max_price:
-            query += " AND p.discountedprice BETWEEN %s AND %s"
+            query += " AND COALESCE(p.discountedprice, p.baseprice) BETWEEN %s AND %s"
             params.extend([min_price, max_price])
 
         # Aplicar filtro de estoque
@@ -552,6 +633,12 @@ def category_detail(request, id):
         if search_query:
             query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query}%"])
+
+        # Aplicar filtro de desconto (se selecionado)
+        if discount_filter == 'com_desconto':
+            query += " AND p.discountedprice IS NOT NULL"
+        elif discount_filter == 'sem_desconto':
+            query += " AND p.discountedprice IS NULL"
 
         cursor.execute(query, params)
         columns = [col[0] for col in cursor.description]
@@ -571,12 +658,15 @@ def category_detail(request, id):
         'page_obj': page_obj,
         'category_name': category_name,
         'categories': categories,
+        'brands': brands,  # Passamos a lista de marcas para o template
+        'selected_brand': brand_id,  # Marca selecionada
         'min_price': min_price,
         'max_price': max_price,
         'min_db_price': min_db_price,
         'max_db_price': max_db_price,
         'selected_stock': stock_filter,
-        'search_query': search_query  # Passar a pesquisa para o template
+        'search_query': search_query,
+        'selected_discount': discount_filter  # Passar o filtro de desconto para o template
     }
     return render(request, 'category_detail.html', context)
 
@@ -678,10 +768,8 @@ def add_to_cart(request, id, stock):
     return response
 
 
-
 def admin(request):
     return render(request, 'admin.html')
-
 
 def get_cart_items(request):
     product_ids = request.GET.get('ids', '')
@@ -888,7 +976,6 @@ def delete_content(request, tablename, id):
     
     return redirect('adminview', tablename=tablename)
 
-
 def edit_content(request, tablename, id):
     if tablename == "static_content.categories":
         primary_key = "categoryid"
@@ -898,51 +985,60 @@ def edit_content(request, tablename, id):
         return HttpResponse("Invalid table", status=400)
 
     if request.method == "POST":
-        # Fetch the existing record
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
             if not row:
                 return HttpResponse("Record not found", status=404)
-            columns = [col[0] for col in cursor.description]
-            existing_data = dict(zip(columns, row))  # Store existing values
 
-        # Build the UPDATE query dynamically, excluding the primary key
+            columns = [col[0] for col in cursor.description]
+            existing_data = dict(zip(columns, row))  # Armazena os valores existentes
+
         update_columns = []
         update_values = []
 
+        print("POST DATA:", request.POST.dict())  # Depuração
+
         for col in columns:
-            if col == primary_key:  # Skip the primary key
-                continue
-            elif col in ["image_url", "preview_img"]:  # Handle image upload
-                if request.FILES.get(col):  # If user uploaded a new image
-                    upload_result = upload_to_cloudinary.upload_image(request.FILES[col])
-                    image_url = upload_result["secure_url"]  # Get the Cloudinary URL
+            if col == primary_key:
+                continue  # Ignorar a chave primária
+            elif col in ["image_url", "preview_img"]:
+                image_file = request.FILES.get(col)  # Obtém o arquivo enviado
+                if image_file:  # Se houver novo upload
+                    upload_result = upload_to_cloudinary.upload_image(image_file)
+                    image_url = upload_result["secure_url"]
                 else:
-                    image_url = existing_data[col]  # Keep the old image if not updated
+                    image_url = existing_data[col]  # Mantém a imagem antiga
 
                 update_columns.append(f"{col} = %s")
                 update_values.append(image_url)
             else:
+                value = request.POST.get(col, existing_data[col])
+                if value in ["", None, "None"]:  # Se for vazio ou "None", mantém o valor antigo
+                    value = existing_data[col]
                 update_columns.append(f"{col} = %s")
-                update_values.append(request.POST.get(col, existing_data[col]))  # Keep old value if not changed
+                update_values.append(value)
 
-        update_values.append(id)  # Add the primary key value for WHERE clause
+        update_values.append(id)
 
         update_query = f"UPDATE {tablename} SET {', '.join(update_columns)} WHERE {primary_key} = %s"
+        
+        print("QUERY:", update_query)  # Depuração
+        print("VALUES:", update_values)  # Depuração
 
         with connection.cursor() as cursor:
             cursor.execute(update_query, update_values)
+            connection.commit()  # Garante que as alterações sejam persistidas
 
         return redirect('adminview', tablename=tablename)
 
     else:
-        # GET request: fetch the existing record for editing
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
             if not row:
                 return HttpResponse("Record not found", status=404)
+
             columns = [col[0] for col in cursor.description]
             data = dict(zip(columns, row))
 
@@ -952,7 +1048,6 @@ def edit_content(request, tablename, id):
             'columns': columns,
         }
         return render(request, 'edit_content.html', context)
-
 
 def get_product_info(request, product_id):
     with connection.cursor() as cursor:

@@ -19,8 +19,16 @@ class LogToMongoMiddleware(MiddlewareMixin):
             "method": request.method,
             "status_code": response.status_code,
             "timestamp": datetime.datetime.utcnow(),
-            "user": request.session['user_name'],
-            "body": request.body.decode('utf-8') if request.body else None,
+            "user": request.session.get('user_name', 'Anonymous'),
+            "body": None  # Inicialmente, não acessamos `request.body`
         }
+
+        # Apenas tentamos acessar `request.body` se for um POST e não tiver sido lido antes
+        if request.method == "POST":
+            try:
+                log_entry["body"] = request.body.decode('utf-8')
+            except Exception:
+                log_entry["body"] = "Already read"
+
         logs_collection.insert_one(log_entry)
         return response

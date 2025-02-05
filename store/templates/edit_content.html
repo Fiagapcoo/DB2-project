@@ -27,16 +27,20 @@
         .form-control {
             margin-bottom: 10px;
         }
-        .btn-save {
-            display: block;
-            width: 100%;
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .btn-save, .btn-cancel {
+            flex: 1;
         }
     </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
-    <h2 class="text-center">Edit Record in {{ table_name|title }}</h2>
+    <h2 class="text-center">Editar Registro em {{ table_name|title }}</h2>
     <div class="form-container">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
@@ -50,13 +54,16 @@
                                 <input type="file" class="form-control" id="{{ column }}" name="{{ column }}" accept="image/*" onchange="previewImage(this)">
                                 <img id="preview_{{ column }}" src="{{ data|get_item:column }}" alt="Image Preview" class="form-image">
                             {% else %}
-                                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" value="{{ data|get_item:column }}">
+                                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" value="{{ data|get_item:column }}" required>
                             {% endif %}
                         </div>
                     {% endif %}
                 {% endfor %}
             </div>
-            <button type="submit" class="btn btn-primary btn-save">Save</button>
+            <div class="btn-container">
+                <button type="submit" class="btn btn-primary btn-save">Guardar</button>
+                <a href="{% url 'adminview' tablename=table_name %}" class="btn btn-secondary btn-cancel">Cancelar</a>
+            </div>
         </form>
     </div>
 </div>

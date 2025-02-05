@@ -18,7 +18,7 @@
 
         <!-- Campo de Pesquisa -->
         <div class="mb-3">
-            <label for="search" class="form-label fw-bold">🔍 Pesquisar Produto</label>
+            <label for="search" class="form-label fw-bold">Pesquisar Produto</label>
             <input type="text" id="search" name="search" class="form-control" 
                 placeholder="Digite o nome ou número de série..." 
                 value="{{ search_query }}" 
@@ -29,7 +29,7 @@
         <!-- Dropdown de Categorias -->
         {% if not category_name and request.path != "/accessories" %}
             <!-- Dropdown de Categorias (somente se NÃO estiver na página de detalhe da categoria) -->
-            <label for="categoria" class="form-label fw-bold">📂 Categoria</label>
+            <label for="categoria" class="form-label fw-bold">Categoria</label>
             <select id="categoria" name="categoria" class="form-select" onchange="document.getElementById('filter-form').submit();">
                 <option value="">Todas as Categorias</option>
                 {% for categoria in categories %}
@@ -40,11 +40,48 @@
             </select>
         {% endif %}
 
-    
-        <!-- Slider de Preço Dinâmico -->
-    
+
+        <!-- Dropdown de Marcas com Scroll e Divisores -->
         <div class="mb-3">
-            <label for="price-range" class="form-label fw-bold">💰 Faixa de Preço</label>
+            <label for="marca" class="form-label fw-bold">Marca</label>
+            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 5px;">
+                <ul id="brand-list" class="list-group">
+                    <!-- Opção para todas as marcas -->
+                    <li class="list-group-item text-primary fw-bold"
+                        onclick="window.location.href='?marca={{ selected_brand }}';" style="cursor: pointer;">
+                        Todas as Marcas
+                    </li>
+                    <li class="divider" style="height: 1px; background: #ddd; margin: 5px 0;"></li>
+        
+                    <!-- Lista de marcas -->
+                    {% for brand in brands %}
+                        <li class="list-group-item {% if brand.brandid|stringformat:'s' == selected_brand %}fw-bold{% endif %}" 
+                            onclick="window.location.href='?marca={{ brand.brandid }}';" style="cursor: pointer;">
+                            {{ brand.brandname }}
+                        </li>
+                        {% if not forloop.last %}
+                            <li class="divider" style="height: 1px; background: #ddd; margin: 5px 0;"></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        {% if not is_discount_page %}
+        <!-- Filtro de Desconto -->
+        <div class="mb-3">
+            <label class="form-label fw-bold">Desconto</label>
+            <select id="desconto" name="desconto" class="form-select" onchange="document.getElementById('filter-form').submit();">
+                <option value="" {% if not selected_discount %}selected{% endif %}>Todos</option>
+                <option value="com_desconto" {% if selected_discount == 'com_desconto' %}selected{% endif %}>Com Desconto</option>
+                <option value="sem_desconto" {% if selected_discount == 'sem_desconto' %}selected{% endif %}>Sem Desconto</option>
+            </select>
+        </div>
+        {% endif %}
+
+        <!-- Slider de Preço Dinâmico -->
+        <div class="mb-3">
+            <label for="price-range" class="form-label fw-bold">Faixa de Preço</label>
             <div id="price-slider" class="mt-2"></div>
             <div class="price-display d-flex justify-content-between mt-2">
                 <input type="text" id="min-value" name="min_price" class="price-input form-control text-center fw-bold" readonly value="{{ min_price }}">
@@ -55,7 +92,7 @@
         
         <!-- Filtro de Estoque -->
         <div class="mb-3">
-            <label class="form-label fw-bold">📦 Disponibilidade</label>
+            <label class="form-label fw-bold">Disponibilidade</label>
             <select id="stock" name="stock" class="form-select" onchange="document.getElementById('filter-form').submit();">
                 <option value="">Todos</option>
                 <option value="in_stock" {% if selected_stock == 'in_stock' %}selected{% endif %}>Com Stock</option>
@@ -65,7 +102,7 @@
 
         <!-- Botão de Reset -->
         <div class="d-grid">
-            <a href="{{ request.path }}" class="btn btn-secondary">🔄 Resetar Filtros</a>
+            <a href="{{ request.path }}" class="btn btn-secondary">Reset Filtros</a>
         </div>
         
     </form>

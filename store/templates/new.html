@@ -10,8 +10,9 @@
 <div class="container-fluid gx-0 vh-80">
     <div class="row">
         <div class="col-3">
-            {% include 'filter_card.html' %}
+            {% include 'filter_card.html' with categories=categories selected_category=selected_category brands=brands selected_brand=selected_brand %}
         </div>
+        
         <div class="col-9">
             <!-- Barra vermelha -->
             <div class="red-bar"></div>
