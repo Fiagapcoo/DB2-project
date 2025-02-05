@@ -826,26 +826,23 @@ def remove_from_cart(request, id):
     return response
 
 def add_content(request, tablename):
-    #TODO check if manager = true
-    
     if request.method == 'POST':
         print(request.POST)
-        if(tablename == 'dynamic_content.stock'):
+
+        if tablename == 'dynamic_content.stock':
             ProductID = request.POST.get('productid')
             quantity = request.POST.get('quantity')
-            
+
             with connection.cursor() as cursor:
                 cursor.execute(f"UPDATE {tablename} SET quantity = quantity + %s, lastupdated = NOW() WHERE productid = %s", [quantity, ProductID])
                 return redirect('admin')
+
         elif tablename == 'static_content.categories':
             name = request.POST.get('name')
             description = request.POST.get('description')
             preview_img = request.FILES.get('preview_img')
 
-            if preview_img:
-                preview_img_url = upload_to_cloudinary.upload_image(preview_img) 
-            else:
-                preview_img_url = None 
+            preview_img_url = upload_to_cloudinary.upload_image(preview_img) if preview_img else None
 
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -854,10 +851,10 @@ def add_content(request, tablename):
                 )
 
             return redirect('admin')
+
         elif tablename == 'dynamic_content.products':
             name = request.POST.get('name')
             description = request.POST.get('description')
-            
             baseprice = request.POST.get('baseprice')
             discountedprice = request.POST.get('discountedprice')
 
@@ -871,7 +868,7 @@ def add_content(request, tablename):
             productserialnumber = request.POST.get('productserialnumber')
             producttype = request.POST.get('producttype')
             categoryid = request.POST.get('categoryid')
-            
+
             try:
                 categoryid = int(categoryid) if categoryid else None
             except ValueError:
@@ -879,13 +876,7 @@ def add_content(request, tablename):
 
             image_url = request.FILES.get('image_url')
 
-            if image_url:
-                image_url = upload_to_cloudinary.upload_image(image_url) 
-            else:
-                image_url = None 
-
-            print("INSERT COMMAND: INSERT INTO dynamic_content.products (name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                % (name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url))
+            image_url = upload_to_cloudinary.upload_image(image_url) if image_url else None
 
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -895,11 +886,22 @@ def add_content(request, tablename):
 
             return redirect('admin')
 
-            
-    
+        elif tablename == 'dynamic_content.brands':  # 💡 NOVO BLOCO PARA BRANDS
+            brandname = request.POST.get('brandname')
+
+            if not brandname:
+                return HttpResponse("O nome da marca é obrigatório.", status=400)
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO dynamic_content.brands (brandname) VALUES (%s)",
+                    [brandname]
+                )
+
+            return redirect('admin')
+
     # GET request handling (showing the form)
     with connection.cursor() as cursor:
-        # First query: Get fields
         cursor.execute("""
             SELECT column_name, data_type 
             FROM information_schema.columns 
@@ -907,20 +909,16 @@ def add_content(request, tablename):
             AND ordinal_position > 1  -- Skip the first column (ID)
             ORDER BY ordinal_position
         """, [tablename.split('.')[-1]])
-        
+
         fields = []
         for column in cursor.fetchall():
-            fields.append({
-                'name': column[0],
-                'type': column[1]
-            })
-        
-        # Second query: Get categories
+            fields.append({'name': column[0], 'type': column[1]})
+
         cursor.execute("SELECT * FROM static_content.categories")
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-        
-        cursor.execute(f"SELECT * FROM dynamic_content.products")
+
+        cursor.execute("SELECT * FROM dynamic_content.products")
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
@@ -928,13 +926,12 @@ def add_content(request, tablename):
         'table_name': tablename,
         'fields': fields,
         'categories': categories,
-        'products':products
+        'products': products
     }
-    
-    print(context)
-    
-    return render(request, 'add_content.html', context)
 
+    print(context)
+
+    return render(request, 'add_content.html', context)
 
 def adminview(request, tablename):
     with connection.cursor() as cursor:
@@ -969,27 +966,47 @@ def adminview(request, tablename):
     return render(request, 'adminview.html', context)
 
 def delete_content(request, tablename, id):
-    
-    with connection.cursor() as cursor:
-        # Call the stored procedure with parameter placeholders.
-        cursor.execute("CALL delete_content(%s, %s)", [tablename, id])
-    
-    return redirect('adminview', tablename=tablename)
+    if request.method == "POST":
+        try:
+            # Definir chave primária correta
+            if tablename == "dynamic_content.products":
+                primary_key = "productid"
+            elif tablename == "static_content.categories":
+                primary_key = "categoryid"
+            elif tablename == "dynamic_content.brands":
+                primary_key = "brandid"
+            else:
+                return HttpResponse("Tabela inválida", status=400)
+
+            with connection.cursor() as cursor:
+                query = f"DELETE FROM {tablename} WHERE {primary_key} = %s"
+                cursor.execute(query, [id])
+                connection.commit()
+
+            return redirect('adminview', tablename=tablename)
+
+        except Exception as e:
+            return HttpResponse(f"Erro ao excluir o item: {e}", status=500)
+
+    return HttpResponse("Método inválido", status=400)
 
 def edit_content(request, tablename, id):
+    # Definir chave primária correta
     if tablename == "static_content.categories":
         primary_key = "categoryid"
     elif tablename == "dynamic_content.products":
         primary_key = "productid"
+    elif tablename == "dynamic_content.brands":
+        primary_key = "brandid"
     else:
-        return HttpResponse("Invalid table", status=400)
+        return HttpResponse("Tabela inválida", status=400)
 
     if request.method == "POST":
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
             if not row:
-                return HttpResponse("Record not found", status=404)
+                return HttpResponse("Registro não encontrado", status=404)
 
             columns = [col[0] for col in cursor.description]
             existing_data = dict(zip(columns, row))  # Armazena os valores existentes
@@ -1004,14 +1021,23 @@ def edit_content(request, tablename, id):
                 continue  # Ignorar a chave primária
             elif col in ["image_url", "preview_img"]:
                 image_file = request.FILES.get(col)  # Obtém o arquivo enviado
+
                 if image_file:  # Se houver novo upload
                     upload_result = upload_to_cloudinary.upload_image(image_file)
-                    image_url = upload_result["secure_url"]
+                    print("UPLOAD RESULT:", upload_result)  # Depuração
+
+                    if upload_result:  # Garante que não é None antes de usar
+                        image_url = upload_result
+                    else:
+                        print(f"Erro ao fazer upload para o Cloudinary: {upload_result}")
+                        image_url = existing_data[col]  # Mantém a imagem antiga
+
                 else:
                     image_url = existing_data[col]  # Mantém a imagem antiga
 
                 update_columns.append(f"{col} = %s")
                 update_values.append(image_url)
+
             else:
                 value = request.POST.get(col, existing_data[col])
                 if value in ["", None, "None"]:  # Se for vazio ou "None", mantém o valor antigo
@@ -1037,7 +1063,7 @@ def edit_content(request, tablename, id):
             cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
             if not row:
-                return HttpResponse("Record not found", status=404)
+                return HttpResponse("Registro não encontrado", status=404)
 
             columns = [col[0] for col in cursor.description]
             data = dict(zip(columns, row))

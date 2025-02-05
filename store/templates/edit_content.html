@@ -46,7 +46,7 @@
             {% csrf_token %}
             <div class="row">
                 {% for column in columns %}
-                    {% if column != "productid" and column != "categoryid" %}
+                    {% if column != "productid" and column != "categoryid" and column != "brandid" %}
                         <div class="col-12 mb-3">
                             <label for="{{ column }}" class="form-label">{{ column|title }}</label>
 

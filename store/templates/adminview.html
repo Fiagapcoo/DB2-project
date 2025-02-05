@@ -5,6 +5,47 @@
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/table.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/pagination.css' %}">
+    <style>
+        /* Estilos do Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-danger {
+            background-color: red;
+            color: white;
+            padding: 10px;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background-color: gray;
+            color: white;
+            padding: 10px;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -13,7 +54,6 @@
 
 <!-- Table Container -->
 <div class="table-container">
-    
     <table class="table">
         <thead>
             <tr>
@@ -50,12 +90,18 @@
                     <td>
                         {% if table_name == 'dynamic_content.products' %}
                             <a href="{% url 'edit_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-edit">✏️ Editar</a>
-                            <a href="{% url 'delete_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
+                            <a href="javascript:void(0);" class="btn btn-remove" onclick="openDeleteModal('{% url 'delete_content' tablename=table_name id=row|get_item:'productid' %}')">🗑️ Remover</a>
+                    
                         {% elif table_name == 'static_content.categories' %}
                             <a href="{% url 'edit_content' tablename=table_name id=row|get_item:'categoryid' %}" class="btn btn-edit">✏️ Editar</a>
-                            <a href="{% url 'delete_content' tablename=table_name id=row|get_item:'categoryid' %}" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
+                            <a href="javascript:void(0);" class="btn btn-remove" onclick="openDeleteModal('{% url 'delete_content' tablename=table_name id=row|get_item:'categoryid' %}')">🗑️ Remover</a>
+                    
+                        {% elif table_name == 'dynamic_content.brands' %}
+                            <a href="{% url 'edit_content' tablename=table_name id=row|get_item:'brandid' %}" class="btn btn-edit">✏️ Editar</a>
+                            <a href="javascript:void(0);" class="btn btn-remove" onclick="openDeleteModal('{% url 'delete_content' tablename=table_name id=row|get_item:'brandid' %}')">🗑️ Remover</a>
                         {% endif %}
-                    </td> 
+                    </td>
+                    
                 </tr>
             {% endfor %}
         </tbody>
@@ -94,4 +140,30 @@
         </ul>
     </nav>
 </div>
+
+<!-- Modal de Confirmação -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Confirmar Exclusão</h3>
+        <p>Tem certeza de que deseja excluir este item?</p>
+        <form id="deleteForm" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Confirmar</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Adicionar eventos ao clicar no botão de remover -->
+<script>
+    function openDeleteModal(deleteUrl) {
+        var deleteForm = document.getElementById("deleteForm");
+        deleteForm.action = deleteUrl; // Define a action para o formulário
+        document.getElementById("deleteModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("deleteModal").style.display = "none";
+    }
+</script>
 {% endblock %}
