@@ -8,6 +8,10 @@ import urllib.parse
 from . import upload_to_cloudinary
 import json
 
+def example_view(request):
+    """A sample view function that will be logged."""
+    return JsonResponse({"message": "This view was logged to MongoDB!"})
+
 def index(request):
     try:
         # Check if user is authenticated
@@ -854,11 +858,12 @@ def adminview(request, tablename):
         data = [dict(zip(columns, row)) for row in rows]
 
         # Fetch category names and replace the categoryid value if needed
-        cursor.execute("SELECT categoryid, name FROM static_content.categories")
-        category_dict = {row[0]: row[1] for row in cursor.fetchall()}
-        for item in data:
-            if "categoryid" in item and item["categoryid"] in category_dict:
-                item["categoryid"] = category_dict[item["categoryid"]]
+        if(tablename != "static_content.categories"):
+            cursor.execute("SELECT categoryid, name FROM static_content.categories")
+            category_dict = {row[0]: row[1] for row in cursor.fetchall()}
+            for item in data:
+                if "categoryid" in item and item["categoryid"] in category_dict:
+                    item["categoryid"] = category_dict[item["categoryid"]]
 
     # Paginate (20 rows per page)
     paginator = Paginator(data, 20)
@@ -871,49 +876,76 @@ def adminview(request, tablename):
         'page_obj': page_obj,
     }
     
+    print("context:   ", context)
+    
     return render(request, 'adminview.html', context)
 
 def delete_content(request, tablename, id):
+    
     with connection.cursor() as cursor:
-        # Delete using the primary key column 'productid'
-        cursor.execute(f"DELETE FROM {tablename} WHERE productid = %s", [id])
+        # Call the stored procedure with parameter placeholders.
+        cursor.execute("CALL delete_content(%s, %s)", [tablename, id])
     
     return redirect('adminview', tablename=tablename)
 
+
 def edit_content(request, tablename, id):
+    if tablename == "static_content.categories":
+        primary_key = "categoryid"
+    elif tablename == "dynamic_content.products":
+        primary_key = "productid"
+    else:
+        return HttpResponse("Invalid table", status=400)
+
     if request.method == "POST":
-        # First, get the list of columns for the table.
+        # Fetch the existing record
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM {tablename} WHERE productid = %s", [id])
+            cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
             if not row:
                 return HttpResponse("Record not found", status=404)
             columns = [col[0] for col in cursor.description]
+            existing_data = dict(zip(columns, row))  # Store existing values
 
-        # Build the UPDATE query using all columns except the primary key.
+        # Build the UPDATE query dynamically, excluding the primary key
         update_columns = []
         update_values = []
+
         for col in columns:
-            if col == "productid":
+            if col == primary_key:  # Skip the primary key
                 continue
-            update_columns.append(f"{col} = %s")
-            update_values.append(request.POST.get(col, None))
-        update_values.append(id)
-        update_query = f"UPDATE {tablename} SET {', '.join(update_columns)} WHERE productid = %s"
+            elif col in ["image_url", "preview_img"]:  # Handle image upload
+                if request.FILES.get(col):  # If user uploaded a new image
+                    upload_result = upload_to_cloudinary.upload_image(request.FILES[col])
+                    image_url = upload_result["secure_url"]  # Get the Cloudinary URL
+                else:
+                    image_url = existing_data[col]  # Keep the old image if not updated
+
+                update_columns.append(f"{col} = %s")
+                update_values.append(image_url)
+            else:
+                update_columns.append(f"{col} = %s")
+                update_values.append(request.POST.get(col, existing_data[col]))  # Keep old value if not changed
+
+        update_values.append(id)  # Add the primary key value for WHERE clause
+
+        update_query = f"UPDATE {tablename} SET {', '.join(update_columns)} WHERE {primary_key} = %s"
 
         with connection.cursor() as cursor:
             cursor.execute(update_query, update_values)
 
         return redirect('adminview', tablename=tablename)
+
     else:
-        # GET: fetch the existing record and display it for editing.
+        # GET request: fetch the existing record for editing
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM {tablename} WHERE productid = %s", [id])
+            cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
             if not row:
                 return HttpResponse("Record not found", status=404)
             columns = [col[0] for col in cursor.description]
             data = dict(zip(columns, row))
+
         context = {
             'table_name': tablename,
             'data': data,

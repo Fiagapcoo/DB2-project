@@ -77,24 +77,31 @@ def register(request):
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
             email = request.POST.get('email')
-            password = encrypt_string(request.POST.get('password'))
+            password = encrypt_string(request.POST.get('password'))  # Assuming this function is defined
             phone_number = request.POST.get('phone_number')
             full_name = f"{first_name} {last_name}"
+            is_manager = False
+
+            print("full_name: ", full_name)
+            print("phone_number: ", phone_number)
+            print("email: ", email)
+            print("password: ", password)
 
             with connection.cursor() as cursor:
-                cursor.execute("CALL HR.InsertUser(%s, %s, %s, %s)", [full_name, phone_number, email, password])
+                # Explicitly pass the is_manager parameter
+                cursor.execute("CALL HR.InsertUser(%s, %s, %s, %s, %s)", 
+                               [full_name, phone_number, email, password, is_manager])
 
                 messages.success(request, 'Conta criada com sucesso')
-
-            return redirect("index") 
+                return redirect("index")  # Redirect only after successful registration
 
         except Exception as e:
-            context["registration_success"] = False  # Garantir que sucesso é False
-            context["registration_error"] = True     # Definir erro como True
-            context["error_message"] = str(e)  # Para debug
+            context["registration_success"] = False  # Ensure success is False
+            context["registration_error"] = True     # Set error flag
+            context["error_message"] = str(e)        # Store error message for debugging
+            messages.error(request, f"Erro ao criar conta: {str(e)}")  # Display error message
 
     return render(request, 'register.html', context)
-
 
 
 def password_recovery(request):
