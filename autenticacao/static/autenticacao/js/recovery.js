@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
             method: "POST",
             headers: {
               "X-CSRFToken": csrfToken,
-              "X-Requested-With": "XMLHttpRequest",  // <-- IMPORTANTE
+              "X-Requested-With": "XMLHttpRequest", 
               "Content-Type": "application/x-www-form-urlencoded",
             },
             body: `email=${encodeURIComponent(email)}`,
@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 1000);
     }
 
-    // Reenvio de código OTP
+
     resendBtn.addEventListener("click", function () {
         if (!this.disabled) {
             const emailInput = document.querySelector("input[name='email']").value.trim();

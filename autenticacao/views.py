@@ -111,11 +111,35 @@ def password_recovery(request):
         if not email:
             return JsonResponse({"success": False, "error": "Email é obrigatório"}, status=400)
         
+        with connection.cursor() as cursor:
+            cursor.execute('''
+            SELECT u.userid FROM hr.users u 
+            WHERE u.email = %s
+        ''',[email])
+        
+        row = cursor.fetchone()
+
+        if not row:
+            return JsonResponse({"sucess": False, "error" : "Este email não está registado" }, status=400)
+        
+        user_id = row[0]
+
         # Geração e envio do código
         codigo = gerar_codigo_recuperacao()
+        
+        cursor.execute('''
+                DELETE FROM CONTROL.codigos_recuperacao
+                WHERE userid = %s
+        ''',[user_id])
+    
         enviar_email_recuperacao(email, codigo)
 
-        # Sempre retornar JSON quando for POST
+        cursor.execute('''
+                 INSERT INTO CONTROL.codigos_recuperacao (userid, criacao, codigo)
+                 VALUES (%s, NOW(), %s)
+             ''', [user_id, codigo])
+      
+      
         return JsonResponse({"success": True})
 
     # Para GET, renderiza o template
