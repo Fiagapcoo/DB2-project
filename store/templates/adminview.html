@@ -13,11 +13,12 @@
 
 <!-- Table Container -->
 <div class="table-container">
+    
     <table class="table">
         <thead>
             <tr>
                 {% for column in columns %}
-                    {% if column != "productid" %}
+                    {% if column != "productid" and column != "categoryid" %}
                         <th>{{ column|title }}</th>
                     {% endif %}
                 {% endfor %}
@@ -28,7 +29,7 @@
             {% for row in page_obj %}
                 <tr>
                     {% for key, value in row.items %}
-                        {% if key != "productid" %}
+                        {% if key != "productid" and key != "categoryid" %}
                             <td>
                                 {% if key == "image_url" or key == "preview_img" %}
                                     <img src="{{ value }}" alt="Image" class="table-image">
@@ -45,11 +46,14 @@
                         {% endif %}
                     {% endfor %}
                     <td>
-                        <!-- Edit link: passes the table name and productid -->
-                        <a href="{% url 'edit_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-edit">✏️ Editar</a>
-                        <!-- Delete link: passes the table name and productid -->
-                        <a href="{% url 'delete_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
-                    </td>
+                        {% if table_name == 'dynamic_content.products' %}
+                            <a href="{% url 'edit_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-edit">✏️ Editar</a>
+                            <a href="{% url 'delete_content' tablename=table_name id=row|get_item:'productid' %}" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
+                        {% elif table_name == 'static_content.categories' %}
+                            <a href="{% url 'edit_content' tablename=table_name id=row|get_item:'categoryid' %}" class="btn btn-edit">✏️ Editar</a>
+                            <a href="{% url 'delete_content' tablename=table_name id=row|get_item:'categoryid' %}" class="btn btn-remove" onclick="return confirm('Tem certeza que deseja excluir este item?');">🗑️ Remover</a>
+                        {% endif %}
+                    </td> 
                 </tr>
             {% endfor %}
         </tbody>
