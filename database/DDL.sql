@@ -114,7 +114,7 @@ CREATE TABLE DYNAMIC_CONTENT.Products (
     ModelID INT,
     ProductSerialNumber VARCHAR(50),
     CategoryID INT,
-    ProductType VARCHAR(255) NOT NULL,
+    producttype VARCHAR(255) NOT NULL,
     image_url VARCHAR(255) NOT NULL,
     CONSTRAINT fk_products_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID) ON DELETE SET NULL
 );

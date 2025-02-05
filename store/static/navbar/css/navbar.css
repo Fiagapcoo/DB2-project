@@ -11,38 +11,31 @@ body {
 .navbar {
     width: 100%;
     height: 20vh;
-    background-image: url('../images/banda.avif'); /* Imagem de fundo */
+    background-image: url('../images/banner2.jpg'); /* Imagem de fundo */
     background-size: cover;
     background-position: center;
     display: flex;
-    justify-content: center !important;
+    justify-content: center; /* Centraliza os itens na navbar */
     align-items: center;
     position: relative;
 }
 
 .navbar-content {
-    width: 90%;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: absolute;
-    top: 20px; /* Encosta as categorias no topo */
-}
-
-.menu-icon {
-    font-size: 24px;
-    color: white;
-    cursor: pointer;
-}
-
-.menu-icon:hover {
-    color: black;
+    top: 30px; /* Mantém os links no topo */
 }
 
 .nav-categories {
     list-style-type: none;
     display: flex;
-    gap: 100px;
+    gap: 50px; /* Reduzi um pouco o gap para melhor responsividade */
+    margin: 0 auto; /* Centraliza horizontalmente */
+    justify-content: center;
+    align-items: center;
 }
 
 .nav-categories li a {
@@ -59,7 +52,17 @@ body {
 
 .nav-icons {
     display: flex;
-    gap: 15px;
+    gap: 20px;
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.cart-link {
+    position: relative;
+    font-size: 24px;
+    color: white;
 }
 
 .icon {
@@ -70,4 +73,25 @@ body {
 
 .icon:hover {
     color: black;
+}
+
+/* Estiliza o contador do carrinho */
+#cart-counter {
+    font-size: 12px;
+    width: 18px;
+    height: 18px;     
+    display: flex;
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center;     /* Centraliza verticalmente */
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%); /* Posiciona melhor o contador */
+    background-color: red;
+    color: white;
+    border-radius: 50%; /* Garante que é um círculo */
+    font-weight: bold;  /* Deixa o número mais visível */
+    line-height: 1;     /* Garante que o número não fique desalinhado */
+    padding: 2px;       /* Pequeno espaçamento interno */
+    min-width: 18px;    /* Mantém a largura mínima */
 }

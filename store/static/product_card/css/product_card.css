@@ -180,3 +180,11 @@
     background-color: #f8f9fa;
     border-color: #ccc;
 }
+
+.out-of-stock {
+    opacity: 0.6;
+    pointer-events: none;
+    background-color: #e0e0e0;
+    filter: grayscale(100%);
+    border: 1px solid #ccc;
+}

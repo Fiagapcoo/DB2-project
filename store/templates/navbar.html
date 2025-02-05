@@ -11,31 +11,30 @@
 {% block content %}
 <div class="navbar">
     <div class="navbar-content">
-        <!-- Menu Icon -->
-        <div class="menu-icon">
-            <i class="bi bi-list"></i>
-        </div>
-
-        <!-- Navigation Links -->
+        <!-- Centraliza as Categorias -->
         <ul class="nav-categories">
             <li><a href="{% url 'instruments' %}">Instrumentos</a></li>
             <li><a href="{% url 'accessories' %}">Acessórios</a></li>
             <li><a href="{% url 'new' %}">Novo</a></li>
             <li><a href="{% url 'discount' %}">Descontos</a></li>
-            <li><a href="{% url 'highlights' %}">Destaques</a></li>
         </ul>
 
-        <!-- Icons: Cart and Profile -->
+        <!-- Ícones à Direita -->
         <div class="nav-icons">
-            <a href="{% url 'cart' %}" class="cart-link">
+            <a href="{% url 'cart' %}" class="cart-link position-relative">
                 <i class="bi bi-cart icon"></i>
+                <span id="cart-counter" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                    0
+                </span>
             </a>
 
-            <!-- Dropdown for Profile Icon -->
+            <!-- Dropdown para o Ícone do Perfil -->
             <div class="dropdown">
-                <i class="bi bi-person icon " id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false"></i>
+                <a href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person icon"></i>
+                </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    <li><a class="dropdown-item" href="order_history"></i>Historico de Vendas</a></li>
+                    <li><a class="dropdown-item" href="{% url 'order_history' %}">Histórico de Vendas</a></li>
                     <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>
             </div>
@@ -43,6 +42,62 @@
     </div>
 </div>
 
+
+
 <!-- Add Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const cartCounter = document.getElementById("cart-counter");
+    
+        function getCartFromCookies() {
+            const cookies = document.cookie.split('; ').find(row => row.startsWith('cart='));
+            if (!cookies) return {};
+    
+            try {
+                let rawCart = decodeURIComponent(cookies.split('=')[1])
+                    .replace(/\\054/g, ',')
+                    .replace(/\\"/g, '"')
+                    .replace(/^"|"$/g, '');
+    
+                return JSON.parse(rawCart);
+            } catch (e) {
+                console.error("❌ Erro ao interpretar JSON do carrinho:", e);
+                return {};
+            }
+        }
+    
+        function updateCartCounter() {
+            let cart = getCartFromCookies();
+            let totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+    
+            if (totalItems > 0) {
+                cartCounter.innerText = totalItems;
+                cartCounter.style.display = "block";  // Exibir o contador se houver itens
+            } else {
+                cartCounter.style.display = "none";  // Ocultar se o carrinho estiver vazio
+            }
+        }
+    
+        // Atualiza o contador ao carregar a página
+        updateCartCounter();
+    
+        // Atualiza o contador sempre que um item for adicionado ao carrinho
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                setTimeout(updateCartCounter, 500);  // Pequeno delay para garantir atualização correta
+            });
+        });
+
+        let dropdownToggle = document.getElementById("profileDropdown");
+        let dropdownMenu = new bootstrap.Dropdown(dropdownToggle);
+
+        dropdownToggle.addEventListener("click", function (event) {
+            event.preventDefault();  // Evita o comportamento padrão do link
+            dropdownMenu.toggle();   // Alterna o dropdown manualmente
+        });
+    });
+    </script>
+    

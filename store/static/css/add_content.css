@@ -1,0 +1,57 @@
+/* Estilização do Formulário */
+form {
+    max-width: 600px;
+    margin: 0 auto; /* Centraliza o formulário */
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Labels em negrito */
+.form-group label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+/* Espaçamento entre os campos */
+.form-group {
+    margin-bottom: 15px; /* Espaçamento entre os inputs */
+}
+
+/* Estilização dos inputs */
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Botão de envio */
+.btn-primary {
+    width: 100%;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Pré-visualização de imagens */
+img[id^="preview_"] {
+    display: block;
+    max-width: 200px;
+    margin-top: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
