@@ -8,6 +8,7 @@ import urllib.parse
 from . import upload_to_cloudinary
 import json
 import random
+from threading import Timer
 
 def example_view(request):
     """A sample view function that will be logged."""
@@ -29,7 +30,7 @@ def process_checkout(request):
         # 🛒 Dados do Carrinho
         cart_content = data.get("cart", {})
         total_amount = data.get("total", 0.00)
-        payment_method = data.get("payment_method", "transferencia_bancaria")
+        payment_method = data.get("payment_method", "cash_on_delivery")  # Default: pagamento na entrega
 
         # 🏠 Endereço do Usuário
         address_line1 = data.get("address_line1", "")
@@ -61,7 +62,7 @@ def process_checkout(request):
                 if not stock or stock[0] < quantity:
                     return JsonResponse({"error": f"Estoque insuficiente para o produto {product_id} (disponível: {stock[0] if stock else 0})"}, status=400)
 
-            # 🔹 1. Salvar Pedido na Tabela `orders`
+            # 🔹 1. Salvar Pedido na Tabela `orders` (Status inicial: Pending)
             cursor.execute("""
                 INSERT INTO transactions.orders (userid, transactioncode, status, cartcontentjson)
                 VALUES (%s, %s, %s, %s) RETURNING orderid
@@ -83,20 +84,60 @@ def process_checkout(request):
                 VALUES (%s, %s, %s, %s, %s)
             """, (order_id, user_id, payment_method, "Pending", total_amount))
 
-            # 🔹 4. Atualizar Estoque na Tabela `stock`
-            for item in formatted_cart["items"]:
-                product_id = item["product_id"]
-                quantity = item["quantity"]
+            # 🔹 4. Lidar com Estoque:
+            if payment_method == "cash_on_delivery":
+                # ✅ Pagamento na Entrega: Remove o estoque imediatamente
+                for item in formatted_cart["items"]:
+                    product_id = item["product_id"]
+                    quantity = item["quantity"]
 
-                cursor.execute("""
-                    UPDATE dynamic_content.stock
-                    SET quantity = quantity - %s, lastupdated = now()
-                    WHERE productid = %s
-                """, (quantity, product_id))
+                    cursor.execute("""
+                        UPDATE dynamic_content.stock
+                        SET quantity = quantity - %s, lastupdated = now()
+                        WHERE productid = %s
+                    """, (quantity, product_id))
+
+                print(f"🛒 Estoque atualizado imediatamente para o pedido {order_id} (Pagamento na Entrega).")
+
+            elif payment_method == "bank_transfer":
+                # ✅ Transferência Bancária: Simular pagamento antes de atualizar estoque
+                print(f"💰 Simulando pagamento para o pedido {order_id}...")
+
+                def complete_payment():
+                    with connection.cursor() as cursor:
+                        # ✅ Atualizar Status do Pagamento
+                        cursor.execute("""
+                            UPDATE transactions.payments
+                            SET paymentstatus = 'Paid'
+                            WHERE orderid = %s
+                        """, [order_id])
+
+                        # ✅ Atualizar Status da Ordem para "Completed"
+                        cursor.execute("""
+                            UPDATE transactions.orders
+                            SET status = 'Completed'
+                            WHERE orderid = %s
+                        """, [order_id])
+
+                        # ✅ Agora sim, remover do estoque
+                        for item in formatted_cart["items"]:
+                            product_id = item["product_id"]
+                            quantity = item["quantity"]
+
+                            cursor.execute("""
+                                UPDATE dynamic_content.stock
+                                SET quantity = quantity - %s, lastupdated = now()
+                                WHERE productid = %s
+                            """, (quantity, product_id))
+
+                    print(f"✅ Pagamento confirmado e estoque atualizado para o pedido {order_id}!")
+
+                # Simular pagamento após 30 segundos
+                Timer(30, complete_payment).start()
 
         return JsonResponse({
             "success": True,
-            "message": "Pedido realizado com sucesso!",
+            "message": "Pedido realizado com sucesso! Aguarde confirmação do pagamento...",
             "order_id": order_id,
             "transaction_code": transaction_code
         })
