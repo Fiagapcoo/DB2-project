@@ -1005,6 +1005,8 @@ def edit_content(request, tablename, id):
         primary_key = "productid"
     elif tablename == "dynamic_content.brands":
         primary_key = "brandid"
+    elif tablename == "hr.users":
+        primary_key = "userid"
     else:
         return HttpResponse("Tabela inválida", status=400)
 

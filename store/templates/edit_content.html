@@ -46,19 +46,32 @@
             {% csrf_token %}
             <div class="row">
                 {% for column in columns %}
+                {% if table_name == "hr.users" %}
+                    {% if column == "ismanager" %}
+                        <div class="col-12 mb-3">
+                            <label for="{{ column }}" class="form-label">{{ column|title }}</label>
+                            <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
+                                   value="{{ data|get_item:column }}" required>
+                        </div>
+                    {% endif %}
+                {% else %}
                     {% if column != "productid" and column != "categoryid" and column != "brandid" %}
                         <div class="col-12 mb-3">
                             <label for="{{ column }}" class="form-label">{{ column|title }}</label>
-
                             {% if column == "image_url" or column == "preview_img" %}
-                                <input type="file" class="form-control" id="{{ column }}" name="{{ column }}" accept="image/*" onchange="previewImage(this)">
-                                <img id="preview_{{ column }}" src="{{ data|get_item:column }}" alt="Image Preview" class="form-image">
+                                <input type="file" class="form-control" id="{{ column }}" name="{{ column }}" 
+                                       accept="image/*" onchange="previewImage(this)">
+                                <img id="preview_{{ column }}" src="{{ data|get_item:column }}" 
+                                     alt="Image Preview" class="form-image">
                             {% else %}
-                                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" value="{{ data|get_item:column }}" required>
+                                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
+                                       value="{{ data|get_item:column }}" required>
                             {% endif %}
                         </div>
                     {% endif %}
-                {% endfor %}
+                {% endif %}
+            {% endfor %}
+            
             </div>
             <div class="btn-container">
                 <button type="submit" class="btn btn-primary btn-save">Guardar</button>
