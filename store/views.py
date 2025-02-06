@@ -857,10 +857,12 @@ def add_content(request, tablename):
             description = request.POST.get('description')
             baseprice = request.POST.get('baseprice')
             discountedprice = request.POST.get('discountedprice')
+            brandid = request.POST.get('brandid')
 
             try:
                 baseprice = float(baseprice) if baseprice else None
                 discountedprice = float(discountedprice) if discountedprice else None
+                brandid = float(brandid)
             except ValueError:
                 baseprice = None
                 discountedprice = None
@@ -880,8 +882,8 @@ def add_content(request, tablename):
 
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO dynamic_content.products (name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                    [name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url]
+                    "INSERT INTO dynamic_content.products (name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url, brandid) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    [name, description, baseprice, discountedprice, productserialnumber, categoryid, producttype, image_url, brandid]
                 )
 
             return redirect('admin')
@@ -921,12 +923,17 @@ def add_content(request, tablename):
         cursor.execute("SELECT * FROM dynamic_content.products")
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        cursor.execute("SELECT * FROM dynamic_content.brands")
+        columns = [col[0] for col in cursor.description]
+        brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
     context = {
         'table_name': tablename,
         'fields': fields,
         'categories': categories,
-        'products': products
+        'products': products,
+        'brands': brands
     }
 
     print(context)
