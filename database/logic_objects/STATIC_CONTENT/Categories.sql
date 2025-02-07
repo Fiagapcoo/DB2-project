@@ -1,43 +1,12 @@
-CREATE OR REPLACE PROCEDURE STATIC_CONTENT.insert_category(
-    p_Name VARCHAR(100),
-    p_Description TEXT
-)
-AS $$
-BEGIN
-    INSERT INTO STATIC_CONTENT.Categories (
-        Name,
-        Description
-    ) VALUES (
-        p_Name,
-        p_Description
+CREATE OR REPLACE VIEW static_content.categories_with_instruments AS
+SELECT 
+    c.*
+FROM 
+    static_content.categories c
+WHERE 
+    EXISTS (
+        SELECT 1 
+        FROM dynamic_content.products p 
+        WHERE p.categoryid = c.categoryid 
+        AND p.producttype = 'instrument'
     );
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-CREATE OR REPLACE PROCEDURE STATIC_CONTENT.update_category(
-    p_CategoryID INT,
-    p_Name VARCHAR(100),
-    p_Description TEXT
-)
-AS $$
-BEGIN
-    UPDATE STATIC_CONTENT.Categories
-    SET Name = p_Name,
-        Description = p_Description
-    WHERE CategoryID = p_CategoryID;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-CREATE OR REPLACE PROCEDURE STATIC_CONTENT.delete_category(
-    p_CategoryID INT
-)
-AS $$
-BEGIN
-    DELETE FROM STATIC_CONTENT.Categories
-    WHERE CategoryID = p_CategoryID;
-END;
-$$ LANGUAGE plpgsql;

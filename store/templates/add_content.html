@@ -6,7 +6,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- add_content.html -->
 <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <h2>Add {{ table_name }}</h2>
@@ -33,6 +32,15 @@
         {% endfor %}
       </select>
 
+    {% elif table_name == 'dynamic_content.brands' and field.name == 'brandname' %}
+      <input
+        type="text"
+        name="{{ field.name }}"
+        id="{{ field.name }}"
+        class="form-control"
+        required
+      />
+
     {% elif field.name == 'producttype' %}
       <select name="{{ field.name }}" id="{{ field.name }}" class="form-control">
         <option value="" disabled selected>Selecione uma opção</option>
@@ -58,7 +66,13 @@
         alt="Preview"
         style="display: none; max-width: 200px; margin-top: 10px"
       />
-
+    {% elif field.name == 'brandid' %}
+      <select name="{{ field.name }}" id="{{ field.name }}" class="form-control">
+        <option value="" disabled selected>Selecione uma opção</option>
+        {% for brand in brands %}
+          <option value="{{ brand.brandid }}">{{ brand.brandname }}</option>
+        {% endfor %}
+      </select>
     {% elif field.type == 'text' %}
       <input
         type="text"
@@ -105,7 +119,6 @@
   <button type="submit" class="btn btn-primary">Save</button>
 </form>
 
-<!-- JavaScript para a pré-visualização da imagem -->
 <script>
   function previewImage(event, fieldName) {
     var reader = new FileReader();

@@ -1,46 +1,25 @@
-CREATE OR REPLACE FUNCTION TRANSACTIONS.order_insert_trigger_func()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Check if user exists
-    IF NOT EXISTS (
-        SELECT 1
-        FROM HR.Users
-        WHERE UserID = NEW.UserID
-    ) THEN
-        RAISE EXCEPTION 'User with ID % does not exist', NEW.UserID;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER order_insert_trigger
-BEFORE INSERT ON TRANSACTIONS.Orders
-FOR EACH ROW
-EXECUTE PROCEDURE TRANSACTIONS.order_insert_trigger_func();
-
-
-CREATE OR REPLACE PROCEDURE TRANSACTIONS.update_order(
-    p_OrderID INT,
-    p_Status VARCHAR(50),
+CREATE OR REPLACE FUNCTION TRANSACTIONS.insert_order(
+    p_UserID INT,
+    p_TransactionCode VARCHAR(50),
     p_CartContentJSON JSON
 )
-AS $$
+RETURNS INT AS
+$$
+DECLARE
+    v_OrderID INT;
 BEGIN
-    UPDATE TRANSACTIONS.Orders
-    SET Status = p_Status,
-        CartContentJSON = p_CartContentJSON
-    WHERE OrderID = p_OrderID;
-END;
-$$ LANGUAGE plpgsql;
+
+    INSERT INTO TRANSACTIONS.Orders (UserID, TransactionCode, Status, CartContentJSON)
+    VALUES (p_UserID, p_TransactionCode, 'Pending', p_CartContentJSON)
+    RETURNING OrderID INTO v_OrderID;
 
 
-CREATE OR REPLACE PROCEDURE TRANSACTIONS.delete_order(
-    p_OrderID INT
-)
-AS $$
-BEGIN
-    DELETE FROM TRANSACTIONS.Orders
-    WHERE OrderID = p_OrderID;
+    RETURN v_OrderID;
+EXCEPTION
+    WHEN unique_violation THEN
+        RAISE EXCEPTION 'TransactionCode must be unique';
+    WHEN foreign_key_violation THEN
+        RAISE EXCEPTION 'UserID does not exist in HR.Users';
 END;
-$$ LANGUAGE plpgsql;
+$$
+LANGUAGE plpgsql;

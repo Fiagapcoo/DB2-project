@@ -1,4 +1,3 @@
--- PROCEDURE para remover todas as tabelas em schemas do usuário
 CREATE OR REPLACE PROCEDURE remove_all_tables()
 AS $$
 DECLARE
@@ -31,7 +30,6 @@ DROP SCHEMA IF EXISTS CONTROL CASCADE;  -- MongoDB pode não precisar
 DROP SCHEMA IF EXISTS STATIC_CONTENT CASCADE;
 DROP SCHEMA IF EXISTS DYNAMIC_CONTENT CASCADE;
 DROP SCHEMA IF EXISTS TRANSACTIONS CASCADE;
-DROP SCHEMA IF EXISTS PROMOS CASCADE;
 
 -- Criar os schemas
 CREATE SCHEMA SECURITY;
@@ -40,7 +38,6 @@ CREATE SCHEMA CONTROL;
 CREATE SCHEMA STATIC_CONTENT;
 CREATE SCHEMA DYNAMIC_CONTENT;
 CREATE SCHEMA TRANSACTIONS;
-CREATE SCHEMA PROMOS;
 
 -- Criar tabelas
 
@@ -59,7 +56,6 @@ CREATE TABLE HR.Users (
     Phone VARCHAR(20),
     Email VARCHAR(255) UNIQUE NOT NULL,
     HashedPassword VARCHAR(255) NOT NULL,
-    ProfilePic VARCHAR(255),
     IsManager BOOLEAN DEFAULT FALSE
 );
 
@@ -95,15 +91,14 @@ CREATE TABLE STATIC_CONTENT.Categories (
     preview_img VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE STATIC_CONTENT.Sub_Categories (
-    SubCategoryID SERIAL PRIMARY KEY,
-    CategoryID INT NOT NULL,
-    Name VARCHAR(100) NOT NULL,
-    Description TEXT,
-    CONSTRAINT fk_subcategories_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID) ON DELETE CASCADE
-);
 
 -- DYNAMIC_CONTENT
+
+CREATE TABLE DYNAMIC_CONTENT.Brands (
+    BrandID SERIAL PRIMARY KEY,
+    brandname VARCHAR(100) NOT NULL
+);
+
 CREATE TABLE DYNAMIC_CONTENT.Products (
     ProductID SERIAL PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
@@ -114,9 +109,11 @@ CREATE TABLE DYNAMIC_CONTENT.Products (
     ModelID INT,
     ProductSerialNumber VARCHAR(50),
     CategoryID INT,
+    BrandID INT,
     producttype VARCHAR(255) NOT NULL,
     image_url VARCHAR(255) NOT NULL,
-    CONSTRAINT fk_products_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID) ON DELETE SET NULL
+    CONSTRAINT fk_products_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID) ON DELETE SET NULL,
+    CONSTRAINT fk_products_brandid FOREIGN KEY (BrandID) REFERENCES DYNAMIC_CONTENT.Brands(BrandID) ON DELETE SET NULL
 );
 
 CREATE TABLE DYNAMIC_CONTENT.Stock (
@@ -149,16 +146,13 @@ CREATE TABLE TRANSACTIONS.Payments (
     CONSTRAINT fk_payments_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE
 );
 
--- PROMOS
-CREATE TABLE PROMOS.Promotions (
-    PromoID SERIAL PRIMARY KEY,
-    Code VARCHAR(50) UNIQUE NOT NULL,
-    Description TEXT,
-    DiscountAmount NUMERIC(10, 2) CHECK (DiscountAmount >= 0),
-    DiscountPercentage DECIMAL(5, 2) CHECK (DiscountPercentage BETWEEN 0 AND 100),
-    ValidUntil DATE,
-    ProductID INT,
-    CategoryID INT,
-    CONSTRAINT fk_promos_productid FOREIGN KEY (ProductID) REFERENCES DYNAMIC_CONTENT.Products(ProductID) ON DELETE SET NULL,
-    CONSTRAINT fk_promos_categoryid FOREIGN KEY (CategoryID) REFERENCES STATIC_CONTENT.Categories(CategoryID) ON DELETE SET NULL
-);
+CREATE TABLE CONTROL.codigos_recuperacao (
+
+    codID SERIAL PRIMARY KEY,
+    UserID Int NOt Null,
+    criacao TIMESTAMP,
+    codigo INT, --codigo de 6 digitos
+    codigoSeguro varchar(255),
+    CONSTRAINT fk_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE,
+
+)

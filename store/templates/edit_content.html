@@ -4,24 +4,92 @@
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/form.css' %}">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 10px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .form-control {
+            margin-bottom: 10px;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .btn-save, .btn-cancel {
+            flex: 1;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<h2>Edit Record in {{ table_name|title }}</h2>
-<form method="post">
-    {% csrf_token %}
-    <table>
-        {% for column in columns %}
-            {% if column != "productid" %}
-            <tr>
-                <td><label for="{{ column }}">{{ column|title }}</label></td>
-                <td>
-                    <input type="text" id="{{ column }}" name="{{ column }}" value="{{ data|get_item:column }}">
-                </td>
-            </tr>
-            {% endif %}
-        {% endfor %}
-    </table>
-    <button type="submit">Save</button>
-</form>
+<div class="container">
+    <h2 class="text-center">Editar Registro em {{ table_name|title }}</h2>
+    <div class="form-container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                {% for column in columns %}
+                {% if table_name == "hr.users" %}
+                    {% if column == "ismanager" %}
+                        <div class="col-12 mb-3">
+                            <label for="{{ column }}" class="form-label">{{ column|title }}</label>
+                            <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
+                                   value="{{ data|get_item:column }}" required>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if column != "productid" and column != "categoryid" and column != "brandid" %}
+                        <div class="col-12 mb-3">
+                            <label for="{{ column }}" class="form-label">{{ column|title }}</label>
+                            {% if column == "image_url" or column == "preview_img" %}
+                                <input type="file" class="form-control" id="{{ column }}" name="{{ column }}" 
+                                       accept="image/*" onchange="previewImage(this)">
+                                <img id="preview_{{ column }}" src="{{ data|get_item:column }}" 
+                                     alt="Image Preview" class="form-image">
+                            {% else %}
+                                <input type="text" class="form-control" id="{{ column }}" name="{{ column }}" 
+                                       value="{{ data|get_item:column }}" required>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            
+            </div>
+            <div class="btn-container">
+                <button type="submit" class="btn btn-primary btn-save">Guardar</button>
+                <a href="{% url 'adminview' tablename=table_name %}" class="btn btn-secondary btn-cancel">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('preview_' + input.id).src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
 {% endblock %}

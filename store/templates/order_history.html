@@ -17,25 +17,22 @@
                     </thead>
                     <tbody>
                         {% for order in user_orders %}
-                                <tr>
-                                    {% if forloop.first %}
-                                        <td class="text-center fw-bold" rowspan="{{ order.4.items|length }}">{{ order.0 }}</td>
-                                        <td class="text-center text-primary" rowspan="{{ order.4.items|length }}">{{ order.2 }}</td>
-                                        <td class="text-center" rowspan="{{ order.4.items|length }}">
-                                            {% if order.3 == "Completed" %}
-                                                <span class="badge bg-success">✅ Concluído</span>
-                                            {% elif order.3 == "Pending" %}
-                                                <span class="badge bg-warning text-dark">⏳ Pendente</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">❌ Outro</span>
-                                            {% endif %}
-                                        </td>
+                            <tr>
+                                <td class="text-center fw-bold">{{ order.0 }}</td>
+                                <td class="text-center text-primary">{{ order.2 }}</td>
+                                <td class="text-center">
+                                    {% if order.3 == "Completed" %}
+                                        <span class="badge bg-success">✅ Concluído</span>
+                                    {% elif order.3 == "Pending" %}
+                                        <span class="badge bg-warning text-dark">⏳ Pendente</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">❌ Outro</span>
                                     {% endif %}
-                                    
-                                    <td class="text-center">
-                                        <a href="{% url 'order_details' order.0 %}" class="btn btn-info btn-sm">🔍 Ver Detalhes</a>
-                                    </td>                                    
-                                </tr>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'order_details' order.0 %}" class="btn btn-info btn-sm">🔍 Ver Detalhes</a>
+                                </td>                                    
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>

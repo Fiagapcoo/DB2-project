@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Carrinho 🛒</h2>
+    <h2 class="mb-4">Carrinho</h2>
 
     <div id="cart-items">
         <p>Carregando itens do carrinho...</p>
@@ -51,26 +51,26 @@ document.addEventListener("DOMContentLoaded", function() {
     function saveCartToCookies(cart) {
     let existingCart = getCartFromCookies(); // 🔥 Obtém os produtos já existentes no cookie
 
-    // 🔥 Atualiza apenas os produtos modificados, mantendo os anteriores
+    // Atualiza apenas os produtos modificados, mantendo os anteriores
     Object.keys(cart).forEach(productId => {
         existingCart[productId] = cart[productId];
     });
 
-    // 🔥 Remove produtos que tenham sido deletados
+    // Remove produtos que tenham sido deletados
     Object.keys(existingCart).forEach(productId => {
         if (!cart.hasOwnProperty(productId)) {
             delete existingCart[productId];
         }
     });
 
-    // 🔥 Converte manualmente para o formato correto: {"1":1\054"2":1\054"3":2}
+    //  Converte manualmente para o formato correto: {"1":1\054"2":1\054"3":2}
     let customCartString = "{";
     customCartString += Object.keys(existingCart)
         .map(productId => `\"${productId}\":${existingCart[productId]}`)
-        .join(", ");  // 🔥 Mantém a vírgula como \054 caso seja necessário
+        .join(", ");  //  Mantém a vírgula como \054 caso seja necessário
     customCartString += "}";
 
-    // 🔥 Salva no cookie de forma personalizada
+    //  Salva no cookie de forma personalizada
     document.cookie = `cart=${customCartString}; path=/; max-age=31536000`;
 
     console.log("✅ Carrinho atualizado nos cookies:", customCartString);
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         cartTotalElement.innerText = `€${total.toFixed(2)}`;
         if (cartItems.length === 0) {
-            cartContainer.innerHTML = "<p>Seu carrinho está vazio. 🛍️</p>";
+            cartContainer.innerHTML = "<p>O seu carrinho está atualmente vazio.</p>";
             checkoutButton.disabled = true;
             checkoutLink.classList.add("disabled");
             checkoutLink.removeAttribute("href");
@@ -110,23 +110,23 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // ✅ Remove item do carrinho e atualiza os cookies
     function removeFromCart(productId) {
-        let cart = getCartFromCookies();  // 🔥 Obtém o carrinho atualizado
+        let cart = getCartFromCookies();  //  Obtém o carrinho atualizado
 
         if (cart.hasOwnProperty(productId)) {
-            delete cart[productId];  // 🔥 Remove o produto do carrinho
-            saveCartToCookies(cart); // 🔥 Atualiza os cookies corretamente
+            delete cart[productId];  //  Remove o produto do carrinho
+            saveCartToCookies(cart); //  Atualiza os cookies corretamente
         }
 
         let itemElement = document.getElementById(`cart-item-${productId}`);
         if (itemElement) {
-            itemElement.remove(); // 🔥 Remove o item da interface
+            itemElement.remove(); //  Remove o item da interface
         }
 
-        updateCartTotal(); // 🔥 Atualiza o total do carrinho
+        updateCartTotal(); //  Atualiza o total do carrinho
 
         // ✅ Se o carrinho estiver vazio, exibe a mensagem correta
         if (Object.keys(cart).length === 0) {
-            document.getElementById("cart-items").innerHTML = "<p>Seu carrinho está vazio. 🛍️</p>";
+            document.getElementById("cart-items").innerHTML = "<p>O seu carrinho está atualmente vazio.</p>";
         }
 
         console.log(`🗑 Produto ${productId} removido do carrinho. Novo carrinho:`, cart);
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // ✅ Atualiza a quantidade no carrinho e salva nos cookies
     function updateQuantity(productId, inputElement, maxStock) {
-        let cart = getCartFromCookies();  // 🔥 Carrega o carrinho atualizado
+        let cart = getCartFromCookies();  // Carrega o carrinho atualizado
         let quantity = parseInt(inputElement.value);
 
         if (isNaN(quantity) || quantity < 1) {
@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         inputElement.value = quantity;
-        cart[productId] = quantity;  // 🔥 Atualiza a quantidade corretamente
+        cart[productId] = quantity;  // Atualiza a quantidade corretamente
         saveCartToCookies(cart);
         updateCartTotal();
     }
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let productIds = Object.keys(cart);
 
         if (productIds.length === 0) {
-            cartContainer.innerHTML = "<p>Seu carrinho está vazio. 🛍️</p>";
+            cartContainer.innerHTML = "<p>O seu carrinho está atualmente vazio.</p>";
             return;
         }
 

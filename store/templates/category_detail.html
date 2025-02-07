@@ -10,10 +10,10 @@
 {% include 'top_bar.html' with categories=categories %}
 
 <div class="container-fluid gx-0 vh-80">
-    <div class="row">
+    <div class="row gx-0">
         <!-- Coluna do filtro -->
         <div class="col-md-3">
-            {% include 'filter_card.html' %}
+            {% include 'filter_card.html' with categories=categories selected_category=id brands=brands selected_brand=selected_brand selected_discount=selected_discount %}
         </div>
 
         <!-- Coluna dos produtos -->

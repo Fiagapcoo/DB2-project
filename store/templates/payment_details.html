@@ -148,29 +148,101 @@
             });
     }
 
-// Função para buscar os países da API
+// Função para buscar e ordenar os países da API
 async function loadCountries() {
-    const response = await fetch('https://restcountries.com/v3.1/all');
-    const countries = await response.json();
+    try {
+        const response = await fetch('https://restcountries.com/v3.1/all');
+        const countries = await response.json();
 
-    const select = document.getElementById('country');
-    countries.forEach(country => {
-        const option = document.createElement('option'); 
-        
-        
-        const countryName = country.translations.por ? country.translations.por.common : country.name.common;
-        
-        option.value = country.cca2; 
-        option.textContent = countryName; 
-        select.appendChild(option); 
-    });
+        // Ordena os países pelo nome (português se disponível, senão em inglês)
+        countries.sort((a, b) => {
+            let nameA = a.translations.por ? a.translations.por.common : a.name.common;
+            let nameB = b.translations.por ? b.translations.por.common : b.name.common;
+            return nameA.localeCompare(nameB);
+        });
+
+        // Preencher o select com os países ordenados
+        const select = document.getElementById('country');
+        countries.forEach(country => {
+            const option = document.createElement('option'); 
+            
+            const countryName = country.translations.por ? country.translations.por.common : country.name.common;
+            
+            option.value = country.cca2; 
+            option.textContent = countryName; 
+            select.appendChild(option); 
+        });
+
+    } catch (error) {
+        console.error("❌ Erro ao carregar países:", error);
+    }
 }
-
 
 window.onload = function() {
     loadCountries();
     updateOrderSummary();
 };
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const orderButton = document.getElementById("order-button");
+    
+        if (!orderButton) {
+            console.error("🚨 ERRO: Botão de pedido não encontrado!");
+            return;
+        }
+    
+        orderButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            console.log("🛒 Botão de pedido clicado!");
+    
+            let cart = getCartFromCookies();
+            let totalPrice = document.getElementById("total-price").innerText.replace("€", "").trim();
+            let paymentMethod = document.querySelector("input[name='payment']:checked")?.id;
+    
+            if (!paymentMethod) {
+                alert("Selecione um método de pagamento!");
+                return;
+            }
+    
+            let checkoutData = {
+                cart: cart,
+                total: parseFloat(totalPrice),
+                payment_method: paymentMethod,
+                address_line1: document.querySelector("input[placeholder='Morada']").value,
+                city: document.querySelector("input[placeholder='Cidade']").value,
+                postal_code: document.querySelector("input[placeholder='Código-postal']").value,
+                country: document.getElementById("country").value,
+                phone_number: document.querySelector("input[placeholder='Número de Telemóvel']").value
+            };
+    
+            console.log("📦 Enviando checkoutData:", checkoutData);
+    
+            fetch("{% url 'process_checkout' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify(checkoutData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("📩 Resposta do servidor:", data);
+    
+                if (data.success) {
+                    alert("✅ Pedido realizado com sucesso!");
+                    document.cookie = "cart=; path=/; max-age=0"; // Limpa carrinho
+                    window.location.href = "/"; // Redireciona para a página inicial
+                } else {
+                    alert("❌ Erro ao finalizar pedido: " + data.error);
+                }
+            })
+            .catch(error => console.error("Erro no checkout:", error));
+        });
+    });
+    </script>
+    
 
 {% endblock %}
