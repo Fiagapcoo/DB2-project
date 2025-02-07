@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm
 from encryption.encrypt_decrypt import encrypt_string
 from django.contrib import messages
 from cryptography.fernet import InvalidToken
-from email_handler.email import gerar_codigo_recuperacao,enviar_email_recuperacao
+from email_handler.email import gerar_codigo_recuperacao,enviar_email_recuperacao,enviar_email_boas_vindas
 from django.http import JsonResponse
 import json
 from django.shortcuts import render
@@ -82,7 +82,7 @@ def register(request):
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
             email = request.POST.get('email')
-            password = encrypt_string(request.POST.get('password'))  # Assuming this function is defined
+            password = encrypt_string(request.POST.get('password')) 
             phone_number = request.POST.get('phone_number')
             full_name = f"{first_name} {last_name}"
             is_manager = False
@@ -98,6 +98,7 @@ def register(request):
                                [full_name, phone_number, email, password, is_manager])
 
                 messages.success(request, 'Conta criada com sucesso')
+                enviar_email_boas_vindas(email,full_name)
                 return redirect("index")  # Redirect only after successful registration
 
         except Exception as e:
