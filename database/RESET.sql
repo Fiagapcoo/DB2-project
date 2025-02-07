@@ -1,4 +1,4 @@
--- Desabilitar restrições temporariamente para evitar erros ao apagar
+
 ALTER TABLE HR.User_address DROP CONSTRAINT fk_user_address_userid;
 ALTER TABLE HR.User_payment DROP CONSTRAINT fk_user_payment_userid;
 ALTER TABLE HR.User_payment DROP CONSTRAINT fk_user_payment_addressid;
@@ -12,7 +12,7 @@ ALTER TABLE TRANSACTIONS.Payments DROP CONSTRAINT fk_payments_userid;
 ALTER TABLE PROMOS.Promotions DROP CONSTRAINT fk_promos_productid;
 ALTER TABLE PROMOS.Promotions DROP CONSTRAINT fk_promos_categoryid;
 
--- Excluir dados das tabelas na ordem correta para evitar erros de chave estrangeira
+
 TRUNCATE TABLE PROMOS.Promotions RESTART IDENTITY CASCADE;
 TRUNCATE TABLE TRANSACTIONS.Payments RESTART IDENTITY CASCADE;
 TRUNCATE TABLE TRANSACTIONS.Orders RESTART IDENTITY CASCADE;
@@ -25,7 +25,7 @@ TRUNCATE TABLE HR.User_payment RESTART IDENTITY CASCADE;
 TRUNCATE TABLE HR.User_address RESTART IDENTITY CASCADE;
 TRUNCATE TABLE HR.Users RESTART IDENTITY CASCADE;
 
--- Restaurar as restrições de chave estrangeira
+
 ALTER TABLE HR.User_address ADD CONSTRAINT fk_user_address_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE;
 ALTER TABLE HR.User_payment ADD CONSTRAINT fk_user_payment_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE;
 ALTER TABLE HR.User_payment ADD CONSTRAINT fk_user_payment_addressid FOREIGN KEY (Billing_AddressID) REFERENCES HR.User_address(AddressID) ON DELETE SET NULL;

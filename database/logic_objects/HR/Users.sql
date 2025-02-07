@@ -64,73 +64,45 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-CREATE OR REPLACE PROCEDURE HR.update_user(
-    p_UserID INT,
-    p_Name VARCHAR(100),
-    p_Phone VARCHAR(20),
-    p_Email VARCHAR(100),
-    p_HashedPassword VARCHAR(255),
-    p_ProfilePic VARCHAR(255),
-    p_IsManager BOOLEAN
+CREATE OR REPLACE FUNCTION HR.get_userid_by_email(
+    p_email VARCHAR(255)
 )
-AS $$
-BEGIN
-    UPDATE HR.Users
-    SET Name = p_Name,
-        Phone = p_Phone,
-        Email = p_Email,
-        HashedPassword = p_HashedPassword,
-        ProfilePic = p_ProfilePic,
-        IsManager = p_IsManager
-    WHERE UserID = p_UserID;
-
-    -- Update the user's password in the dictionary
-    UPDATE SECURITY.User_Passwords_Dictionary
-    SET HashedPassword = p_HashedPassword,
-        CreatedAt = CURRENT_TIMESTAMP
-    WHERE UserID = p_UserID
-    ORDER BY CreatedAt DESC
-    LIMIT 1;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-
-CREATE OR REPLACE PROCEDURE HR.delete_user(
-    p_UserID INT
-)
-AS $$
-BEGIN
-    -- Delete user's password entries from the dictionary
-    DELETE FROM SECURITY.User_Passwords_Dictionary
-    WHERE UserID = p_UserID;
-
-    -- Delete the user
-    DELETE FROM HR.Users
-    WHERE UserID = p_UserID;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION HR.can_user_login(p_email VARCHAR(65535), p_hashed_password VARCHAR(65535))
-RETURNS BOOLEAN AS $$
+RETURNS INT AS
+$$
 DECLARE
-    db_hashed_password VARCHAR(65535);
+    v_UserID INT;
 BEGIN
-    SELECT HashedPassword INTO db_hashed_password
+
+    SELECT UserID
+    INTO v_UserID
     FROM HR.Users
     WHERE Email = p_email;
 
-    IF NOT FOUND THEN
-        RETURN FALSE;
-    END IF;
 
-    IF p_hashed_password = db_hashed_password THEN
-        RETURN TRUE; 
-    ELSE
-        RETURN FALSE;
-    END IF;
+    RETURN v_UserID;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE EXCEPTION 'No user found with email: %', p_email;
 END;
-$$ LANGUAGE plpgsql;
+$$
+LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION HR.get_user_details_by_email(
+    p_email VARCHAR(255)
+)
+RETURNS TABLE (
+    UserID INT,
+    Name VARCHAR(100),
+    Email VARCHAR(255),
+    HashedPassword VARCHAR(255)
+) AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT u.UserID, u.Name, u.Email, u.HashedPassword
+    FROM HR.Users u
+    WHERE u.Email = p_email;
+END;
+$$
+LANGUAGE plpgsql;
