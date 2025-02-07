@@ -1,9 +1,9 @@
 -- Inserção de usuários na tabela HR.Users
 INSERT INTO HR.Users (Name, Phone, Email, HashedPassword, ProfilePic, IsManager)
 VALUES 
-('João Silva', '+351912345678', 'joao.silva@email.com', 'hashedpassword123', 'https://example.com/profile1.jpg', TRUE),
-('Maria Oliveira', '+351923456789', 'maria.oliveira@email.com', 'hashedpassword456', 'https://example.com/profile2.jpg', FALSE),
-('Pedro Santos', '+351934567890', 'pedro.santos@email.com', 'hashedpassword789', 'https://example.com/profile3.jpg', FALSE);
+('João Silva', '+351912345678', 'joao.silva@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'https://example.com/profile1.jpg', TRUE),
+('Maria Oliveira', '+351923456789', 'maria.oliveira@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'https://example.com/profile2.jpg', FALSE),
+('Pedro Santos', '+351934567890', 'pedro.santos@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'https://example.com/profile3.jpg', FALSE);
 
 -- Inserção de endereços na tabela HR.User_address
 INSERT INTO HR.User_address (UserID, Address_line1, Address_line2, City, Postal_code, Country, Phone_number)
