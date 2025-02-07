@@ -595,20 +595,7 @@ def checkout(request, product_id):
    return render(request, 'checkout.html', context)
 
 def cart(request):
-    cart_items = [
-        {"name": "Guitarra Elétrica", "quantity": 1, "unit_price": 500.00, "total_price": 500.00},
-        {"name": "Pedal de Efeitos", "quantity": 2, "unit_price": 150.00, "total_price": 300.00},
-    ]
-    cart_subtotal = sum(item["total_price"] for item in cart_items)
-    cart_tax = cart_subtotal * 0.23
-    cart_total = cart_subtotal + cart_tax
-
-    return render(request, "cart.html", {
-        "cart_items": cart_items,
-        "cart_subtotal": cart_subtotal,
-        "cart_tax": cart_tax,
-        "cart_total": cart_total,
-    })
+    return render(request, "cart.html")
  
 def category_detail(request, id):
     min_price = request.GET.get('min_price', '')
