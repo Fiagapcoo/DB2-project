@@ -10,6 +10,7 @@ from sib_api_v3_sdk.rest import ApiException
 load_dotenv()
 
 
+
 def gerar_codigo_recuperacao():
     """Gera um código aleatório de 6 dígitos para recuperação de senha."""
     return str(random.randint(100000, 999999))
@@ -72,3 +73,4 @@ def enviar_email_boas_vindas(email_destino,nome):
     except ApiException as e:
         print("Erro ao enviar email:", e)
     
+
