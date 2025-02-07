@@ -23,3 +23,26 @@ EXCEPTION
 END;
 $$
 LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION get_order_status_data()
+RETURNS TABLE (order_status VARCHAR, order_count BIGINT) AS $$
+DECLARE
+    status_cursor CURSOR FOR
+        SELECT o.Status, COUNT(*) AS count
+        FROM TRANSACTIONS.Orders o
+        WHERE o.Status IN ('Completed', 'Pending')
+        GROUP BY o.Status;
+BEGIN
+    OPEN status_cursor;
+    
+    LOOP
+        FETCH status_cursor INTO order_status, order_count;
+        EXIT WHEN NOT FOUND;
+        RETURN NEXT;
+    END LOOP;
+
+    CLOSE status_cursor;
+END;
+$$ LANGUAGE plpgsql;
