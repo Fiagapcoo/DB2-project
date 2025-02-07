@@ -3,7 +3,6 @@ CREATE OR REPLACE PROCEDURE HR.InsertUser(
     p_Phone VARCHAR(20),
     p_Email VARCHAR(100),
     p_HashedPassword VARCHAR(255),
-    p_ProfilePic VARCHAR(255) = NULL,
     p_IsManager BOOLEAN = FALSE
 )
 LANGUAGE plpgsql
@@ -14,7 +13,6 @@ BEGIN
         Phone, 
         Email, 
         HashedPassword,
-        ProfilePic,
         IsManager
     )
     VALUES (
@@ -22,7 +20,6 @@ BEGIN
         p_Phone,
         p_Email,
         p_HashedPassword,
-        p_ProfilePic,
         p_IsManager
     );
 END;

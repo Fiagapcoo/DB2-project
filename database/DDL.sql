@@ -59,7 +59,6 @@ CREATE TABLE HR.Users (
     Phone VARCHAR(20),
     Email VARCHAR(255) UNIQUE NOT NULL,
     HashedPassword VARCHAR(255) NOT NULL,
-    ProfilePic VARCHAR(255),
     IsManager BOOLEAN DEFAULT FALSE
 );
 
@@ -174,8 +173,9 @@ CREATE TABLE PROMOS.Promotions (
 CREATE TABLE CONTROL.codigos_recuperacao (
 
     codID SERIAL PRIMARY KEY,
+    UserID Int NOt Null,
     criacao TIMESTAMP,
-    codigo INT,
-    CONSTRAINT fk_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE,
+    codigo INT, --codigo de 6 digitos
+    CONSTRAINT fk_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE
 
 )

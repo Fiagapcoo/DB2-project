@@ -7,6 +7,11 @@ from django.contrib import messages
 from cryptography.fernet import InvalidToken
 from email_handler.email import gerar_codigo_recuperacao,enviar_email_recuperacao
 from django.http import JsonResponse
+import json
+from django.shortcuts import render
+from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your views here.
 
@@ -104,59 +109,159 @@ def register(request):
     return render(request, 'register.html', context)
 
 
+
 def password_recovery(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        
+        try:
+            data = json.loads(request.body)
+            email = data.get("email", "").strip()
+        except json.JSONDecodeError:
+            # Se não conseguimos fazer load do JSON, retornamos erro
+            return JsonResponse({"success": False, "message": "Requisição inválida."}, status=400)
+
         if not email:
-            return JsonResponse({"success": False, "error": "Email é obrigatório"}, status=400)
-        
+            return JsonResponse({"success": False, "message": "Nenhum email foi fornecido."}, status=400)
+
+        # Verifica se o email existe na BD
         with connection.cursor() as cursor:
             cursor.execute('''
-            SELECT u.userid FROM hr.users u 
-            WHERE u.email = %s
-        ''',[email])
-        
-        row = cursor.fetchone()
+                SELECT userid
+                FROM hr.users
+                WHERE email = %s
+            ''', [email])
+            row = cursor.fetchone()
 
         if not row:
-            return JsonResponse({"sucess": False, "error" : "Este email não está registado" }, status=400)
-        
+            # Se não encontrou utilizador, devolve erro
+            return JsonResponse({
+                "success": False,
+                "message": "Esse email não existe na nossa base de dados."
+            }, status=404)
+
         user_id = row[0]
 
-        # Geração e envio do código
+        # Gera/guarda código OTP e apaga códigos antigos
         codigo = gerar_codigo_recuperacao()
-        
-        cursor.execute('''
-                DELETE FROM CONTROL.codigos_recuperacao
-                WHERE userid = %s
-        ''',[user_id])
-    
-        enviar_email_recuperacao(email, codigo)
+        with connection.cursor() as cursor:
+            # apaga códigos antigos deste user
+            cursor.execute('DELETE FROM CONTROL.codigos_recuperacao WHERE userid = %s', [user_id])
+            # envia email
+            enviar_email_recuperacao(email, codigo)
+            # insere o novo código
+            cursor.execute('''
+                INSERT INTO CONTROL.codigos_recuperacao (userid, criacao, codigo)
+                VALUES (%s, NOW(), %s)
+            ''', [user_id, codigo])
 
-        cursor.execute('''
-                 INSERT INTO CONTROL.codigos_recuperacao (userid, criacao, codigo)
-                 VALUES (%s, NOW(), %s)
-             ''', [user_id, codigo])
-      
-      
-        return JsonResponse({"success": True})
+        # Guarda o email na sessão, se for útil para a próxima página
+        request.session["reset_email"] = email
 
-    # Para GET, renderiza o template
+        # Retorna JSON de sucesso
+        return JsonResponse({
+            "success": True,
+            "message": "OTP enviado com sucesso para o seu email."
+        })
+
+    # Se for GET, apenas renderiza a página HTML normalmente
     return render(request, "password_recovery.html")
 
-def reset_password(request):
-    if request.method == 'POST':
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
-        
-        if new_password != confirm_password:
-            messages.error(request, 'As senhas não correspondem.')
-            return render(request, 'reset_password.html')
-        
-        # Aqui você implementaria a lógica de atualização da senha
-        messages.success(request, 'Senha atualizada com sucesso!')
-        return redirect('login')
-    
-    return render(request, 'reset_password.html')
 
+
+def send_otp(request):
+    if request.method == "GET":
+        email = request.GET.get("email", "")
+        return render(request, "otp.html", {"email": email})
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            code = data.get("otp", "")
+            email = data.get("email", "").strip()
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "message": "JSON inválido."}, status=400)
+
+        if not email or not code:
+            return JsonResponse({"success": False, "message": "Email ou código não fornecidos."}, status=400)
+
+        try:
+            code_int = int(code)
+        except ValueError:
+            return JsonResponse({"success": False, "message": "Código inválido (não numérico)."}, status=400)
+
+        with connection.cursor() as cursor:
+            # 1) Verificar se o utilizador existe
+            cursor.execute('''
+                SELECT UserID 
+                FROM hr.users
+                WHERE email = %s
+            ''', [email])
+            row_user = cursor.fetchone()
+
+            if not row_user:
+                return JsonResponse({"success": False, "message": "Utilizador não encontrado."}, status=404)
+
+            user_id = row_user[0]
+
+            # 2) Obter o código na tabela de recuperação
+            cursor.execute('''
+                SELECT criacao, codigo
+                FROM control.codigos_recuperacao
+                WHERE userid = %s
+                ORDER BY criacao DESC
+                LIMIT 1
+            ''', [user_id])
+            row_code = cursor.fetchone()
+
+        if not row_code:
+            return JsonResponse({"success": False, "message": "Não foi encontrado código para este utilizador."}, status=404)
+
+        criacao_db, codigo_db = row_code
+
+        # 3) Verificar se o código é igual ao inserido
+        if codigo_db != code_int:
+            return JsonResponse({"success": False, "message": "Código inválido."}, status=400)
+
+        # 4) Converter criacao_db para datetime aware (assumindo que está no fuso atual)
+        if criacao_db.tzinfo is None:
+            criacao_db = timezone.make_aware(criacao_db, timezone.get_current_timezone())
+
+        # 5) Verificar se já passaram mais de 5 minutos
+        diferenca_tempo = timezone.now() - criacao_db
+        if diferenca_tempo > timedelta(minutes=5):
+            return JsonResponse({"success": False, "message": "Código expirado (mais de 5 minutos)."}, status=400)
+
+        # 6) Se tudo OK, guarda o email na sessão (se precisares numa próxima etapa)
+        request.session["reset_email"] = email
+
+        return JsonResponse({"success": True, "message": "OTP validado com sucesso!"})
+
+    return JsonResponse({"success": False, "message": "Método não suportado."}, status=405)
+
+
+def reset_password(request):
+    if request.method == "POST":
+        # Lê campos de request.POST
+        new_password = request.POST.get('new_password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        email = request.GET.get('email', '').strip()
+
+        if not email:
+            return JsonResponse({"success": False, "error": "Email não informado."}, status=400)
+
+        if new_password != confirm_password:
+            return JsonResponse({"success": False, "error": "As senhas não coincidem."}, status=400)
+
+        hashed_password = encrypt_string(new_password)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE hr.users
+                SET hashedpassword = %s
+                WHERE email = %s
+            """, [hashed_password, email])
+
+        return JsonResponse({"success": True, "message": "Password alterada com sucesso!"})
+
+    # GET -> renderiza template
+    email = request.GET.get('email', '')
+    return render(request, "reset_password.html", {"email": email})
+    
