@@ -7,10 +7,143 @@ from django.http import JsonResponse
 import urllib.parse
 from . import upload_to_cloudinary
 import json
+import random
+from threading import Timer
 
 def example_view(request):
     """A sample view function that will be logged."""
     return JsonResponse({"message": "This view was logged to MongoDB!"})
+
+def process_checkout(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Método não permitido"}, status=405)
+
+    # 🚨 Verificar se o usuário está logado via sessão
+    user_id = request.session.get("user_id")
+
+    if not user_id:
+        return JsonResponse({"error": "Usuário não autenticado"}, status=401)
+
+    try:
+        data = json.loads(request.body)
+
+        # 🛒 Dados do Carrinho
+        cart_content = data.get("cart", {})
+        total_amount = data.get("total", 0.00)
+        payment_method = data.get("payment_method", "cash_on_delivery")  # Default: pagamento na entrega
+
+        # 🏠 Endereço do Usuário
+        address_line1 = data.get("address_line1", "")
+        city = data.get("city", "")
+        postal_code = data.get("postal_code", "")
+        country = data.get("country", "")
+        phone_number = data.get("phone_number", "")
+
+        if not cart_content or total_amount <= 0:
+            return JsonResponse({"error": "Carrinho vazio ou valor inválido"}, status=400)
+
+        # 🔹 Gerar código de transação personalizado no formato TXNXXXXX
+        transaction_code = f"TXN{random.randint(10000, 99999)}"
+
+        # 🔹 Converter formato do carrinho para estrutura correta
+        formatted_cart = {
+            "items": [{"product_id": int(product_id), "quantity": quantity} for product_id, quantity in cart_content.items()]
+        }
+
+        with connection.cursor() as cursor:
+            # 🔹 Verificar se há estoque suficiente para todos os produtos
+            for item in formatted_cart["items"]:
+                product_id = item["product_id"]
+                quantity = item["quantity"]
+
+                cursor.execute("SELECT quantity FROM dynamic_content.stock WHERE productid = %s", [product_id])
+                stock = cursor.fetchone()
+
+                if not stock or stock[0] < quantity:
+                    return JsonResponse({"error": f"Estoque insuficiente para o produto {product_id} (disponível: {stock[0] if stock else 0})"}, status=400)
+
+            # 🔹 1. Salvar Pedido na Tabela `orders` (Status inicial: Pending)
+            cursor.execute("""
+                INSERT INTO transactions.orders (userid, transactioncode, status, cartcontentjson)
+                VALUES (%s, %s, %s, %s) RETURNING orderid
+            """, (user_id, transaction_code, "Pending", json.dumps(formatted_cart)))
+
+            order_id = cursor.fetchone()[0]
+
+            # 🔹 2. Salvar Endereço na Tabela `user_address`
+            cursor.execute("""
+                INSERT INTO hr.user_address (userid, address_line1, city, postal_code, country, phone_number)
+                VALUES (%s, %s, %s, %s, %s, %s) RETURNING addressid
+            """, (user_id, address_line1, city, postal_code, country, phone_number))
+
+            address_id = cursor.fetchone()[0]
+
+            # 🔹 3. Salvar Pagamento na Tabela `payments`
+            cursor.execute("""
+                INSERT INTO transactions.payments (orderid, userid, paymentmethod, paymentstatus, amount)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (order_id, user_id, payment_method, "Pending", total_amount))
+
+            # 🔹 4. Lidar com Estoque:
+            if payment_method == "cash_on_delivery":
+                # ✅ Pagamento na Entrega: Remove o estoque imediatamente
+                for item in formatted_cart["items"]:
+                    product_id = item["product_id"]
+                    quantity = item["quantity"]
+
+                    cursor.execute("""
+                        UPDATE dynamic_content.stock
+                        SET quantity = quantity - %s, lastupdated = now()
+                        WHERE productid = %s
+                    """, (quantity, product_id))
+
+                print(f"🛒 Estoque atualizado imediatamente para o pedido {order_id} (Pagamento na Entrega).")
+
+            elif payment_method == "bank_transfer":
+                # ✅ Transferência Bancária: Simular pagamento antes de atualizar estoque
+                print(f"💰 Simulando pagamento para o pedido {order_id}...")
+
+                def complete_payment():
+                    with connection.cursor() as cursor:
+                        # ✅ Atualizar Status do Pagamento
+                        cursor.execute("""
+                            UPDATE transactions.payments
+                            SET paymentstatus = 'Paid'
+                            WHERE orderid = %s
+                        """, [order_id])
+
+                        # ✅ Atualizar Status da Ordem para "Completed"
+                        cursor.execute("""
+                            UPDATE transactions.orders
+                            SET status = 'Completed'
+                            WHERE orderid = %s
+                        """, [order_id])
+
+                        # ✅ Agora sim, remover do estoque
+                        for item in formatted_cart["items"]:
+                            product_id = item["product_id"]
+                            quantity = item["quantity"]
+
+                            cursor.execute("""
+                                UPDATE dynamic_content.stock
+                                SET quantity = quantity - %s, lastupdated = now()
+                                WHERE productid = %s
+                            """, (quantity, product_id))
+
+                    print(f"✅ Pagamento confirmado e estoque atualizado para o pedido {order_id}!")
+
+                # Simular pagamento após 30 segundos
+                Timer(30, complete_payment).start()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Pedido realizado com sucesso! Aguarde confirmação do pagamento...",
+            "order_id": order_id,
+            "transaction_code": transaction_code
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 def index(request):
     try:
@@ -232,6 +365,14 @@ def new(request):
         elif stock_filter == 'out_of_stock':
             query += " AND s.quantity = 0"
 
+        # Filtro de desconto
+        selected_discount = request.GET.get('desconto', '')
+
+        if selected_discount == 'com_desconto':
+            query += " AND p.discountedprice IS NOT NULL"
+        elif selected_discount == 'sem_desconto':
+            query += " AND p.discountedprice IS NULL"   
+
         # Filtro de pesquisa (nome ou número de série)
         if search_query:
             query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
@@ -250,18 +391,19 @@ def new(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'page_obj': page_obj,
-        'categories': categories,
-        'brands': brands,  # Passamos a lista de marcas para o template
-        'selected_category': category_id,
-        'selected_brand': brand_id,  # Marca selecionada
-        'min_price': min_price,
-        'max_price': max_price,
-        'min_db_price': min_db_price,
-        'max_db_price': max_db_price,
-        'selected_stock': stock_filter,
-        'search_query': search_query  # Passa a pesquisa para o template
-    }
+            'page_obj': page_obj,
+            'categories': categories,
+            'brands': brands,
+            'selected_category': category_id,
+            'selected_brand': brand_id,
+            'min_price': min_price,
+            'max_price': max_price,
+            'min_db_price': min_db_price,
+            'max_db_price': max_db_price,
+            'selected_stock': stock_filter,
+            'search_query': search_query,
+            'selected_discount': selected_discount  # Adicionamos o filtro de desconto
+        }
     return render(request, 'new.html', context)
 
 def accessories(request):
@@ -485,26 +627,51 @@ def order_history(request):
 
 def order_details(request, order_id):
     with connection.cursor() as cursor:
+        # Buscar os detalhes da encomenda
         cursor.execute("SELECT * FROM transactions.orders WHERE orderid = %s", [order_id])
         order = cursor.fetchone()
 
+        # Buscar os detalhes do pagamento
         cursor.execute("SELECT paymentmethod, amount FROM transactions.payments WHERE orderid = %s", [order_id])
         payment = cursor.fetchone()
 
+        # Buscar os detalhes do endereço associado ao usuário da encomenda
+        cursor.execute("""
+            SELECT ua.address_line1, ua.address_line2, ua.city, ua.postal_code, ua.country, ua.phone_number, u.name, u.email
+            FROM hr.user_address ua
+            JOIN hr.users u ON ua.userid = u.userid
+            WHERE ua.userid = %s
+            ORDER BY ua.addressid DESC LIMIT 1
+        """, [order[1]])  # order[1] contém o user_id
+
+        address = cursor.fetchone()
+
     if order:
         try:
-            # Verifica se order[4] já é um dicionário
-            items_data = order[4]
+            # Converte o campo JSON de produtos para um dicionário Python
+            items_data = order[4]  # cartcontentjson
             if isinstance(items_data, str):  
-                items_data = json.loads(items_data)  # Converte apenas se for string
-            
+                items_data = json.loads(items_data)  
+
             order_data = {
                 "id": order[0],
                 "transaction_code": order[2],
                 "status": order[3],
                 "items": items_data["items"],
                 "payment_method": payment[0] if payment else "Desconhecido",
-                "amount": payment[1] if payment else "0.00"
+                "amount": payment[1] if payment else "0.00",
+                "address": {
+                    "line1": address[0] if address else "N/A",
+                    "line2": address[1] if address and address[1] else "",
+                    "city": address[2] if address else "N/A",
+                    "postal_code": address[3] if address else "N/A",
+                    "country": address[4] if address else "N/A",
+                    "phone_number": address[5] if address else "N/A",
+                },
+                "user_info": {
+                    "name": address[6] if address else "N/A",
+                    "email": address[7] if address else "N/A"
+                }
             }
         except (json.JSONDecodeError, KeyError, TypeError):
             order_data = {"id": order[0], "transaction_code": order[2], "status": order[3], "items": []}
@@ -512,6 +679,7 @@ def order_details(request, order_id):
         order_data = None
 
     return render(request, 'order_details.html', {"order": order_data})
+
 
 def logout(request):
     request.session.flush()
@@ -1005,6 +1173,8 @@ def edit_content(request, tablename, id):
         primary_key = "productid"
     elif tablename == "dynamic_content.brands":
         primary_key = "brandid"
+    elif tablename == "hr.users":
+        primary_key = "userid"
     else:
         return HttpResponse("Tabela inválida", status=400)
 

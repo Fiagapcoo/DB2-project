@@ -37,6 +37,8 @@ urlpatterns = [
     path('get-cart-items/', views.get_cart_items, name='get_cart_items'),
     path('remove-from-cart/<int:id>/', views.remove_from_cart, name='remove_from_cart'),
     path('get-product-info/<int:product_id>/', views.get_product_info, name='get_product_info'),
+    path("process-checkout/", views.process_checkout, name="process_checkout"),
+
     
     
     ##ADMIN URLS
