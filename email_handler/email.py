@@ -113,13 +113,73 @@ def enviar_email_boas_vindas(email_destino,nome):
     api_client = ApiClient(configuration)
 
     api_instance = TransactionalEmailsApi(api_client)
+    
+    html_content = f"""
+    <!DOCTYPE html>
+<html>
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+   
+   <table role="presentation" width="100%" max-width="600px" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+       <tr>
+           <td style="padding: 40px 30px;">
+               <h1 style="color: #333333; font-size: 24px; margin: 0 0 20px; text-align: center;">Bem-vindo(a) à Nossa Loja de Instrumentos! 🎵</h1>
+               
+               <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                   Olá {nome},
+               </p>
+               
+               <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                   É com grande satisfação que lhe damos as boas-vindas à nossa loja de instrumentos musicais. Estamos muito contentes por tê-lo(a) connosco!
+               </p>
+               
+               <div style="background-color: #f8f9fa; border-radius: 4px; padding: 20px; margin: 30px 0;">
+                   <h2 style="color: #333333; font-size: 18px; margin: 0 0 15px;">O que pode encontrar na nossa loja:</h2>
+                   <ul style="color: #666666; font-size: 16px; line-height: 24px; margin: 0; padding-left: 20px;">
+                       <li>Uma vasta seleção de instrumentos musicais de qualidade</li>
+                       <li>Acessórios e equipamentos profissionais</li>
+                       <li>Preços competitivos</li>
+                   </ul>
+               </div>
+               
+               <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                   A nossa equipa está sempre disponível para o(a) ajudar com qualquer questão ou dúvida que possa ter. Não hesite em contactar-nos!
+               </p>
+               
+               <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                   Desejamos-lhe excelentes compras e muita música! 🎸🥁🎹
+               </p>
+               
+               <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 30px 0 0;">
+                   Com os melhores cumprimentos,<br>
+                   A Equipa da Tetris micescrnfmice
+               </p>
+           </td>
+       </tr>
+   </table>
+   
+   <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+       <tr>
+           <td style="padding: 30px 30px; text-align: center;">
+               <p style="color: #999999; font-size: 14px; margin: 0;">
+                   © 2025 Tetris micescrnfmice. Todos os direitos reservados.
+               </p>
+           </td>
+       </tr>
+   </table>
+</body>
+</html>
+    """
 
     send_smtp_email = SendSmtpEmail(
     to=[{"email": email_destino, "name": "Destinatário"}],
     sender={"email": "rafafern04.pint@gmail.com", "name": "BD2"},
     subject="Bem-vindo à nossa loja de instrumentos! 🎶",
     text_content="Email de boas Vindas",
-    html_content=f"<h1>Olá {nome},</h1><br><h3>Obrigado por se registrar na nossa loja de instrumentos! Aqui, você encontrará tudo o que precisa para a sua jornada musical.</h3><br><h3>Se tiver alguma dúvida, estamos à disposição para ajudar.</h3><br><h3>Bons sons e boas compras! 🎸🥁🎹</h3><h3>Atenciosamente, Tetris micescrnfmice</h3>"
+    html_content=html_content
     )
 
     try:
