@@ -29,13 +29,69 @@ def enviar_email_recuperacao(email_destino, codigo_recuperacao):
     # Instancia a API de e-mails transacionais
     api_instance = TransactionalEmailsApi(api_client)
 
-    # Configura a mensagem que será enviada
+    html_content = f"""
+    <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    
+    <table role="presentation" width="100%" max-width="600px" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <tr>
+            <td style="padding: 40px 30px;">
+                <h1 style="color: #333333; font-size: 24px; margin: 0 0 20px; text-align: center;">Recuperação da Palavra-passe</h1>
+                
+                <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                    Olá,
+                </p>
+                
+                <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                    Recebemos um pedido para redefinir a sua palavra-passe. Utilize o código de verificação abaixo para concluir o processo:
+                </p>
+                
+                <div style="background-color: #f8f9fa; border-radius: 4px; padding: 20px; margin: 30px 0; text-align: center;">
+                    <span style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; color: #333333; letter-spacing: 5px;">
+                        {codigo_recuperacao}
+                    </span>
+                </div>
+                
+                <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                    Este código expirará em 15 minutos por motivos de segurança. Se não solicitou esta redefinição de palavra-passe, por favor ignore este email.
+                </p>
+                
+                <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 0 0 20px;">
+                    Para sua segurança, nunca partilhe este código com ninguém.
+                </p>
+                
+                <p style="color: #666666; font-size: 16px; line-height: 24px; margin: 30px 0 0;">
+                    Com os melhores cumprimentos,<br>
+                    A Equipa da Tetris micescrnfmice
+                </p>
+            </td>
+        </tr>
+    </table>
+    
+    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td style="padding: 30px 30px; text-align: center;">
+                <p style="color: #999999; font-size: 14px; margin: 0;">
+                    Esta é uma mensagem automática, por favor não responda a este email.<br>
+                    © 2025 Tetris micescrnfmice. Todos os direitos reservados.
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    """
     send_smtp_email = SendSmtpEmail(
         to=[{"email": email_destino, "name": "Destinatário"}],
         sender={"email": "rafafern04.pint@gmail.com", "name": "BD2"},
         subject="Recuperçao de email",
         text_content="Recuperação de Senha",
-        html_content=f"<h1>Recuperação de senha</h1><br><h2>CODIGO: {codigo_recuperacao}</h2>"
+        html_content=html_content
     )
     
     try:
