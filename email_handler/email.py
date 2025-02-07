@@ -89,7 +89,7 @@ def enviar_email_recuperacao(email_destino, codigo_recuperacao):
     send_smtp_email = SendSmtpEmail(
         to=[{"email": email_destino, "name": "Destinatário"}],
         sender={"email": "rafafern04.pint@gmail.com", "name": "BD2"},
-        subject="Recuperçao de email",
+        subject="Recuperação da Palavra-passe",
         text_content="Recuperação de Senha",
         html_content=html_content
     )
