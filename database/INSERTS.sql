@@ -1,9 +1,9 @@
 -- Inserção de usuários na tabela HR.Users
 INSERT INTO HR.Users (Name, Phone, Email, HashedPassword, ProfilePic, IsManager)
 VALUES 
-('João Silva', '+351912345678', 'joao.silva@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'https://example.com/profile1.jpg', TRUE),
-('Maria Oliveira', '+351923456789', 'maria.oliveira@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'https://example.com/profile2.jpg', FALSE),
-('Pedro Santos', '+351934567890', 'pedro.santos@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'https://example.com/profile3.jpg', FALSE);
+('João Silva', '+351912345678', 'joao.silva@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', TRUE),
+('Maria Oliveira', '+351923456789', 'maria.oliveira@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', FALSE),
+('Pedro Santos', '+351934567890', 'pedro.santos@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', FALSE);
 
 -- Inserção de endereços na tabela HR.User_address
 INSERT INTO HR.User_address (UserID, Address_line1, Address_line2, City, Postal_code, Country, Phone_number)
@@ -29,13 +29,6 @@ VALUES
 ('Equipamentos PA', 'Caixas de som, amplificadores e mixers', 'https://thumbs.static-thomann.de/thumb/thumb150x150/pics/images/category/icons/main/pa.webp'),
 ('Acessórios', 'Cabos, palhetas e outros acessórios', 'https://thumbs.static-thomann.de/thumb/thumb150x150/pics/images/category/icons/main/zu.webp');
 
--- Inserção de subcategorias na tabela STATIC_CONTENT.Sub_Categories
-INSERT INTO STATIC_CONTENT.Sub_Categories (CategoryID, Name, Description)
-VALUES 
-(1, 'Bateria Acústica', 'Baterias acústicas completas'),
-(1, 'Bateria Eletrônica', 'Kits eletrônicos para praticidade e gravação'),
-(3, 'Guitarras Elétricas', 'Modelos para rock, jazz e outros estilos'),
-(3, 'Guitarras Acústicas', 'Instrumentos para iniciantes e profissionais');
 
 -- Inserção de marcas na tabela DYNAMIC_CONTENT.brands
 INSERT INTO DYNAMIC_CONTENT.brands (brandname)
@@ -177,11 +170,3 @@ VALUES
 (2, 2, 'PayPal', 'Pending', 260.00);
 
 
--- Inserção de promoções na tabela PROMOS.Promotions
-INSERT INTO PROMOS.Promotions (Code, Description, DiscountAmount, DiscountPercentage, ValidUntil, ProductID, CategoryID)
-VALUES 
-('BLACKFRIDAY', 'Desconto especial para Black Friday', NULL, 20.00, '2025-12-01', NULL, NULL),
-('MIC10', '10% de desconto em microfones', NULL, 10.00, '2025-06-30', NULL, 2),
-('STRAT50', 'Desconto de 50€ na Fender Stratocaster', 50.00, NULL, '2025-07-15', 3, NULL),
-('GUITARFEST', '20% de desconto em guitarras', NULL, 20.00, '2025-12-31', NULL, 3),
-('PIANOFORTE', 'Desconto de 100€ em pianos digitais', 100.00, NULL, '2025-06-30', NULL, 4);

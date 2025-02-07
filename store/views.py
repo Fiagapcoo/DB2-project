@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect
 from .models import *
 from django.core.paginator import Paginator
 from django.db import connection
@@ -10,15 +10,11 @@ import json
 import random
 from threading import Timer
 
-def example_view(request):
-    """A sample view function that will be logged."""
-    return JsonResponse({"message": "This view was logged to MongoDB!"})
-
 def process_checkout(request):
     if request.method != "POST":
         return JsonResponse({"error": "Método não permitido"}, status=405)
 
-    # 🚨 Verificar se o usuário está logado via sessão
+
     user_id = request.session.get("user_id")
 
     if not user_id:
@@ -27,12 +23,12 @@ def process_checkout(request):
     try:
         data = json.loads(request.body)
 
-        # 🛒 Dados do Carrinho
+
         cart_content = data.get("cart", {})
         total_amount = data.get("total", 0.00)
-        payment_method = data.get("payment_method", "cash_on_delivery")  # Default: pagamento na entrega
+        payment_method = data.get("payment_method", "cash_on_delivery")
 
-        # 🏠 Endereço do Usuário
+
         address_line1 = data.get("address_line1", "")
         city = data.get("city", "")
         postal_code = data.get("postal_code", "")
@@ -42,16 +38,16 @@ def process_checkout(request):
         if not cart_content or total_amount <= 0:
             return JsonResponse({"error": "Carrinho vazio ou valor inválido"}, status=400)
 
-        # 🔹 Gerar código de transação personalizado no formato TXNXXXXX
+
         transaction_code = f"TXN{random.randint(10000, 99999)}"
 
-        # 🔹 Converter formato do carrinho para estrutura correta
+
         formatted_cart = {
             "items": [{"product_id": int(product_id), "quantity": quantity} for product_id, quantity in cart_content.items()]
         }
 
         with connection.cursor() as cursor:
-            # 🔹 Verificar se há estoque suficiente para todos os produtos
+
             for item in formatted_cart["items"]:
                 product_id = item["product_id"]
                 quantity = item["quantity"]
@@ -61,16 +57,14 @@ def process_checkout(request):
 
                 if not stock or stock[0] < quantity:
                     return JsonResponse({"error": f"Estoque insuficiente para o produto {product_id} (disponível: {stock[0] if stock else 0})"}, status=400)
+            
+            cart_content_json = json.dumps(formatted_cart)
 
-            # 🔹 1. Salvar Pedido na Tabela `orders` (Status inicial: Pending)
-            cursor.execute("""
-                INSERT INTO transactions.orders (userid, transactioncode, status, cartcontentjson)
-                VALUES (%s, %s, %s, %s) RETURNING orderid
-            """, (user_id, transaction_code, "Pending", json.dumps(formatted_cart)))
+            cursor.execute("SELECT TRANSACTIONS.insert_order(%s, %s, %s);", (user_id, transaction_code, cart_content_json))
 
             order_id = cursor.fetchone()[0]
 
-            # 🔹 2. Salvar Endereço na Tabela `user_address`
+
             cursor.execute("""
                 INSERT INTO hr.user_address (userid, address_line1, city, postal_code, country, phone_number)
                 VALUES (%s, %s, %s, %s, %s, %s) RETURNING addressid
@@ -78,15 +72,15 @@ def process_checkout(request):
 
             address_id = cursor.fetchone()[0]
 
-            # 🔹 3. Salvar Pagamento na Tabela `payments`
+
             cursor.execute("""
                 INSERT INTO transactions.payments (orderid, userid, paymentmethod, paymentstatus, amount)
                 VALUES (%s, %s, %s, %s, %s)
             """, (order_id, user_id, payment_method, "Pending", total_amount))
 
-            # 🔹 4. Lidar com Estoque:
+
             if payment_method == "cash_on_delivery":
-                # ✅ Pagamento na Entrega: Remove o estoque imediatamente
+
                 for item in formatted_cart["items"]:
                     product_id = item["product_id"]
                     quantity = item["quantity"]
@@ -100,26 +94,25 @@ def process_checkout(request):
                 print(f"🛒 Estoque atualizado imediatamente para o pedido {order_id} (Pagamento na Entrega).")
 
             elif payment_method == "bank_transfer":
-                # ✅ Transferência Bancária: Simular pagamento antes de atualizar estoque
                 print(f"💰 Simulando pagamento para o pedido {order_id}...")
 
                 def complete_payment():
                     with connection.cursor() as cursor:
-                        # ✅ Atualizar Status do Pagamento
+
                         cursor.execute("""
                             UPDATE transactions.payments
                             SET paymentstatus = 'Paid'
                             WHERE orderid = %s
                         """, [order_id])
 
-                        # ✅ Atualizar Status da Ordem para "Completed"
+
                         cursor.execute("""
                             UPDATE transactions.orders
                             SET status = 'Completed'
                             WHERE orderid = %s
                         """, [order_id])
 
-                        # ✅ Agora sim, remover do estoque
+
                         for item in formatted_cart["items"]:
                             product_id = item["product_id"]
                             quantity = item["quantity"]
@@ -132,7 +125,6 @@ def process_checkout(request):
 
                     print(f"✅ Pagamento confirmado e estoque atualizado para o pedido {order_id}!")
 
-                # Simular pagamento após 30 segundos
                 Timer(30, complete_payment).start()
 
         return JsonResponse({
@@ -147,7 +139,6 @@ def process_checkout(request):
 
 def index(request):
     try:
-        # Check if user is authenticated
         if request.session.get('user_id') and request.session.get('user_name'):
 
             categories = []
@@ -169,50 +160,38 @@ def index(request):
         return redirect('login')
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
-        # You might want to redirect to an error page in production
-        return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
+        return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 def product_card(request):
     return render(request, 'product_card.html')
 
 def instruments(request):
     with connection.cursor() as cursor:
-        # Fetch instruments
         cursor.execute('''
-            SELECT * FROM dynamic_content.products p 
-            JOIN dynamic_content.stock s ON s.productid = p.productid  
-            WHERE p.producttype = 'instrument'
+            SELECT * FROM dynamic_content.instrument_products_with_stock;
         ''')
         columns = [col[0] for col in cursor.description]
         instruments = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Fetch categories
         cursor.execute('''
-            SELECT * FROM static_content.categories c 
-            WHERE EXISTS (
-                SELECT 1 FROM dynamic_content.products p 
-                WHERE p.categoryid = c.categoryid 
-                AND p.producttype = 'instrument'
-            );
+            SELECT * FROM static_content.categories_with_instruments;
         ''')
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    # Pagination
-    paginator = Paginator(instruments, 15)  # 15 items per page
+    paginator = Paginator(instruments, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'page_obj': page_obj,  # Pass paginated data
+        'page_obj': page_obj,
         'categories': categories
     }
     return render(request, 'instruments.html', context)
 
 def store(request):
     try:
-        # Check if user is authenticated
         if request.session.get('user_id') and request.session.get('user_name'):
 
             categories = []
@@ -234,7 +213,6 @@ def store(request):
         return redirect('login')
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
-        # You might want to redirect to an error page in production
         return HttpResponse(f"An error occurred: {str(e)}", status=500)
 
 def top_bar(request):
@@ -247,26 +225,6 @@ def top_bar(request):
     print(categories)
     return render(request, 'top_bar.html', context)
 
-def top_bar_discount(request):
-    with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p.discountedprice IS NOT NULL);')
-        columns = [col[0] for col in cursor.description]
-        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    
-    context = {'categories': categories}
-    print(categories)
-    return render(request, 'top_bar_discount.html', context)
-
-def top_bar_accessories(request):
-    with connection.cursor() as cursor:
-        cursor.execute('SELECT * FROM static_content.categories c WHERE EXISTS ( SELECT 1 FROM dynamic_content.products p WHERE p.categoryid = c.categoryid AND p."producttype" = \'accessories\';')
-        columns = [col[0] for col in cursor.description]
-        categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    
-    context = {'categories': categories}
-    print(categories)
-    return render(request, 'top_bar_accessories.html', context)
-
 def navbar(request):
     return render(request, 'navbar.html')
 
@@ -274,55 +232,34 @@ def filter_card(request):
     categorias = Categoria.objects.all()
     return render(request, 'filter_card.html', {'categorias': categorias})
 
-def product_details(request):
-    return render(request, 'product_details.html')
-
-def brand_details(request):
-    return render(request, 'brand_details.html')
-
 def base(request):
     return render(request, 'base.html')
 
 def payment_details(request):
     return render(request, 'payment_details.html')
 
-def brands_page(request):
-    return render(request, 'brands_page.html')
-
 def new(request):
     category_id = request.GET.get('categoria', '')
-    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
+    brand_id = request.GET.get('marca', '')
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
     search_query = request.GET.get('search', '')
 
     with connection.cursor() as cursor:
-        # Buscar categorias
+
         cursor.execute("SELECT * FROM static_content.categories")
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Buscar marcas associadas aos últimos 20 produtos adicionados
         cursor.execute("""
-            SELECT DISTINCT ON (b.brandid) b.brandid, b.brandname
-            FROM dynamic_content.products p
-            JOIN dynamic_content.brands b ON p.brandid = b.brandid
-            ORDER BY b.brandid, p.productid DESC
+            SELECT * FROM dynamic_content.latest_products_by_brand;
         """)
         columns = [col[0] for col in cursor.description]
         brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Buscar faixa de preço disponível nos últimos 20 produtos adicionados
         cursor.execute("""
-            SELECT MIN(COALESCE(discountedprice, baseprice)), 
-                   MAX(COALESCE(discountedprice, baseprice)) 
-            FROM (
-                SELECT discountedprice, baseprice 
-                FROM dynamic_content.products 
-                ORDER BY productid DESC 
-                LIMIT 20
-            ) AS subquery
+            select * FROM dynamic_content.product_price_range
         """)
         min_db_price, max_db_price = cursor.fetchone()
 
@@ -331,37 +268,35 @@ def new(request):
         if not max_price:
             max_price = max_db_price
 
-        # Construir a query base para buscar os últimos 20 produtos
         query = '''
             SELECT p.*, s.quantity 
             FROM dynamic_content.products p 
-            JOIN dynamic_content.stock s ON s.productid = p.productid  
-            WHERE 1=1
+            JOIN dynamic_content.stock s ON s.productid = p.productid
         '''
         params = []
 
-        # Filtro de categoria
+
+        
+        
         if category_id:
             query += " AND p.categoryid = %s"
             params.append(category_id)
 
-        # Filtro de marca
         if brand_id:
             query += " AND p.brandid = %s"
             params.append(brand_id)
 
-        # Filtro de preço
+
         if min_price and max_price:
             query += " AND COALESCE(p.discountedprice, p.baseprice) BETWEEN %s AND %s"
             params.extend([min_price, max_price])
 
-        # Filtro de estoque
+
         if stock_filter == 'in_stock':
             query += " AND s.quantity > 0"
         elif stock_filter == 'out_of_stock':
             query += " AND s.quantity = 0"
 
-        # Filtro de desconto
         selected_discount = request.GET.get('desconto', '')
 
         if selected_discount == 'com_desconto':
@@ -369,19 +304,16 @@ def new(request):
         elif selected_discount == 'sem_desconto':
             query += " AND p.discountedprice IS NULL"   
 
-        # Filtro de pesquisa (nome ou número de série)
         if search_query:
             query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query}%"])
 
-        # Ordenar pelos últimos 20 produtos adicionados
         query += " ORDER BY p.productid DESC LIMIT 20"
 
         cursor.execute(query, params)
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    # Paginação
     paginator = Paginator(products, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -398,7 +330,7 @@ def new(request):
             'max_db_price': max_db_price,
             'selected_stock': stock_filter,
             'search_query': search_query,
-            'selected_discount': selected_discount  # Adicionamos o filtro de desconto
+            'selected_discount': selected_discount
         }
     return render(request, 'new.html', context)
 
@@ -408,11 +340,10 @@ def accessories(request):
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
     search_query = request.GET.get('search', '')
-    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
-    discount_filter = request.GET.get('desconto', '')  # Novo filtro de desconto
+    brand_id = request.GET.get('marca', '')
+    discount_filter = request.GET.get('desconto', '')
 
     with connection.cursor() as cursor:
-        # Buscar faixa de preço disponível para acessórios (considerando todos os produtos)
         cursor.execute('''
             SELECT MIN(COALESCE(discountedprice, baseprice)), MAX(COALESCE(discountedprice, baseprice))
             FROM dynamic_content.products
@@ -420,13 +351,11 @@ def accessories(request):
         ''')
         min_db_price, max_db_price = cursor.fetchone()
 
-        # Se os filtros de preço não estiverem preenchidos, usar os valores mínimos e máximos do BD
         if not min_price:
             min_price = min_db_price
         if not max_price:
             max_price = max_db_price
 
-        # Buscar marcas disponíveis nos acessórios
         cursor.execute("""
             SELECT DISTINCT b.brandid, b.brandname
             FROM dynamic_content.products p
@@ -437,7 +366,6 @@ def accessories(request):
         columns = [col[0] for col in cursor.description]
         brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Construindo a query de produtos
         query = '''
             SELECT p.*, s.quantity FROM dynamic_content.products p
             JOIN dynamic_content.stock s ON s.productid = p.productid
@@ -445,29 +373,24 @@ def accessories(request):
         '''
         params = []
 
-        # Aplicando filtro de marca
         if brand_id:
             query += " AND p.brandid = %s"
             params.append(brand_id)
 
-        # Aplicando filtro de desconto
         if discount_filter == "com_desconto":
             query += " AND p.discountedprice IS NOT NULL"
         elif discount_filter == "sem_desconto":
             query += " AND p.discountedprice IS NULL"
 
-        # Aplicando filtro de preço
         if min_price and max_price:
             query += " AND COALESCE(p.discountedprice, p.baseprice) BETWEEN %s AND %s"
             params.extend([min_price, max_price])
 
-        # Aplicando filtro de estoque
         if stock_filter == 'in_stock':
             query += " AND s.quantity > 0"
         elif stock_filter == 'out_of_stock':
             query += " AND s.quantity = 0"
 
-        # Aplicando filtro de pesquisa (por nome ou número de série)
         if search_query:
             query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query}%"])
@@ -476,40 +399,36 @@ def accessories(request):
         columns = [col[0] for col in cursor.description]
         accessories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    # Aplicando paginação - 15 produtos por página
     paginator = Paginator(accessories, 15)
     page_obj = paginator.get_page(page_number)
 
     context = {
         'page_obj': page_obj,
-        'brands': brands,  # Passando as marcas disponíveis
-        'selected_brand': brand_id,  # Marca selecionada
+        'brands': brands,
+        'selected_brand': brand_id,
         'min_price': min_price,
         'max_price': max_price,
         'min_db_price': min_db_price,
         'max_db_price': max_db_price,
         'selected_stock': stock_filter,
-        'selected_discount': discount_filter,  # Desconto selecionado
-        'search_query': search_query,  # Adicionando pesquisa ao contexto
+        'selected_discount': discount_filter,
+        'search_query': search_query,
     }
     return render(request, 'accessories.html', context)
 
-
 def discount(request):
     category_id = request.GET.get('categoria', '')
-    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
+    brand_id = request.GET.get('marca', '')
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
     search_query = request.GET.get('search', '')
 
     with connection.cursor() as cursor:
-        # Buscar categorias
         cursor.execute("SELECT * FROM static_content.categories")
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Buscar marcas presentes nos produtos em desconto
         cursor.execute("""
             SELECT DISTINCT b.brandid, b.brandname
             FROM dynamic_content.products p
@@ -520,7 +439,6 @@ def discount(request):
         columns = [col[0] for col in cursor.description]
         brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Buscar faixa de preço disponível
         cursor.execute("SELECT MIN(discountedprice), MAX(discountedprice) FROM dynamic_content.products WHERE discountedprice IS NOT NULL")
         min_db_price, max_db_price = cursor.fetchone()
 
@@ -529,7 +447,6 @@ def discount(request):
         if not max_price:
             max_price = max_db_price
 
-        # Construir a query base
         query = '''
             SELECT p.*, s.quantity FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid  
@@ -537,28 +454,25 @@ def discount(request):
         '''
         params = []
 
-        # Filtro de categoria
         if category_id:
             query += " AND p.categoryid = %s"
             params.append(category_id)
 
-        # Filtro de marca
+
         if brand_id:
             query += " AND p.brandid = %s"
             params.append(brand_id)
 
-        # Filtro de preço
+
         if min_price and max_price:
             query += " AND p.discountedprice BETWEEN %s AND %s"
             params.extend([min_price, max_price])
 
-        # Filtro de estoque
+
         if stock_filter == 'in_stock':
             query += " AND s.quantity > 0"
         elif stock_filter == 'out_of_stock':
             query += " AND s.quantity = 0"
-
-        # Filtro de pesquisa (nome ou número de série)
         if search_query:
             query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query}%"])
@@ -567,7 +481,7 @@ def discount(request):
         columns = [col[0] for col in cursor.description]
         produtos = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    # Paginação
+
     paginator = Paginator(produtos, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -575,33 +489,26 @@ def discount(request):
     context = {
         'page_obj': page_obj,
         'categories': categories,
-        'brands': brands,  # Passa as marcas corretamente para o template
+        'brands': brands,
         'selected_category': category_id,
-        'selected_brand': brand_id,  # Adiciona a marca selecionada
+        'selected_brand': brand_id,
         'min_price': min_price,
         'max_price': max_price,
         'min_db_price': min_db_price,
         'max_db_price': max_db_price,
         'selected_stock': stock_filter,
-        'search_query': search_query,  # Passa a pesquisa para o template
-        'is_discount_page': True  # Define que estamos na página de descontos
+        'search_query': search_query, 
+        'is_discount_page': True 
     }
     return render(request, 'discount.html', context)
 
-def delete_product(request, product_id):
-    # Logic for deleting the product goes here
-    return HttpResponse(f"Delete product with ID: {product_id}")
-
-def add_to_basket(request, product_id):
-    # Placeholder for adding the product to the basket
-    return HttpResponse(f"Product {product_id} added to basket!")
 
 def edit_product(request, product_id):
     product = next((p for p in PRODUCTS if p['id'] == product_id), None)
     if product is None:
-        return render(request, '404.html')  # Produto não encontrado.
+        return render(request, '404.html')
     
-    thumbnails = range(4)  # Gera uma lista de números [0, 1, 2, 3].
+    thumbnails = range(4)
     return render(request, 'edit_product.html', {'product': product, 'thumbnails': thumbnails})
 
 def order_history(request):
@@ -623,29 +530,25 @@ def order_history(request):
 
 def order_details(request, order_id):
     with connection.cursor() as cursor:
-        # Buscar os detalhes da encomenda
         cursor.execute("SELECT * FROM transactions.orders WHERE orderid = %s", [order_id])
         order = cursor.fetchone()
 
-        # Buscar os detalhes do pagamento
         cursor.execute("SELECT paymentmethod, amount FROM transactions.payments WHERE orderid = %s", [order_id])
         payment = cursor.fetchone()
 
-        # Buscar os detalhes do endereço associado ao usuário da encomenda
         cursor.execute("""
             SELECT ua.address_line1, ua.address_line2, ua.city, ua.postal_code, ua.country, ua.phone_number, u.name, u.email
             FROM hr.user_address ua
             JOIN hr.users u ON ua.userid = u.userid
             WHERE ua.userid = %s
             ORDER BY ua.addressid DESC LIMIT 1
-        """, [order[1]])  # order[1] contém o user_id
+        """, [order[1]]) 
 
         address = cursor.fetchone()
 
     if order:
         try:
-            # Converte o campo JSON de produtos para um dicionário Python
-            items_data = order[4]  # cartcontentjson
+            items_data = order[4]
             if isinstance(items_data, str):  
                 items_data = json.loads(items_data)  
 
@@ -676,29 +579,11 @@ def order_details(request, order_id):
 
     return render(request, 'order_details.html', {"order": order_data})
 
-
 def logout(request):
     request.session.flush()
     response = redirect('login')
     response.delete_cookie('cart')
     return response
-
-def order_history(request):
-    
-    if not request.session.get('user_id'):
-        return redirect('login')
-    
-    user_id = request.session['user_id']
-    user_orders = []
-
-    with connection.cursor() as cursor:
-
-        cursor.execute("SELECT * FROM transactions.orders WHERE userid = %s;", [user_id])
-        user_orders = cursor.fetchall()
-    
-
-    context = {'user_orders': user_orders}
-    return render(request, 'order_history.html', context)
 
 def checkout(request, product_id):
    with connection.cursor() as cursor:
@@ -710,13 +595,12 @@ def checkout(request, product_id):
    return render(request, 'checkout.html', context)
 
 def cart(request):
-    # Example cart data
     cart_items = [
         {"name": "Guitarra Elétrica", "quantity": 1, "unit_price": 500.00, "total_price": 500.00},
         {"name": "Pedal de Efeitos", "quantity": 2, "unit_price": 150.00, "total_price": 300.00},
     ]
     cart_subtotal = sum(item["total_price"] for item in cart_items)
-    cart_tax = cart_subtotal * 0.23  # Example: 23% tax
+    cart_tax = cart_subtotal * 0.23
     cart_total = cart_subtotal + cart_tax
 
     return render(request, "cart.html", {
@@ -726,17 +610,15 @@ def cart(request):
         "cart_total": cart_total,
     })
  
-
 def category_detail(request, id):
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
     stock_filter = request.GET.get('stock', '')
     search_query = request.GET.get('search', '')
-    brand_id = request.GET.get('marca', '')  # Novo filtro de marca
-    discount_filter = request.GET.get('desconto', '')  # Novo filtro para descontos
+    brand_id = request.GET.get('marca', '')
+    discount_filter = request.GET.get('desconto', '')
 
     with connection.cursor() as cursor:
-        # Buscar nome da categoria
         cursor.execute("SELECT name FROM static_content.categories WHERE categoryid = %s", [id])
         category_name = cursor.fetchone()
 
@@ -745,7 +627,6 @@ def category_detail(request, id):
         else:
             category_name = "Categoria Desconhecida"
 
-        # Buscar a faixa de preço disponível nesta categoria (sem filtrar apenas os com desconto)
         cursor.execute('''
             SELECT MIN(COALESCE(discountedprice, baseprice)), MAX(COALESCE(discountedprice, baseprice)) 
             FROM dynamic_content.products 
@@ -758,7 +639,6 @@ def category_detail(request, id):
         if not max_price:
             max_price = max_db_price
 
-        # Buscar marcas dos produtos dentro desta categoria
         cursor.execute("""
             SELECT DISTINCT b.brandid, b.brandname 
             FROM dynamic_content.products p 
@@ -769,7 +649,6 @@ def category_detail(request, id):
         columns = [col[0] for col in cursor.description]
         brands = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Construir a query base para produtos desta categoria (sem filtro fixo de desconto)
         query = '''
             SELECT p.*, s.quantity FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid  
@@ -777,28 +656,23 @@ def category_detail(request, id):
         '''
         params = [id]
 
-        # Aplicar filtro de marca
         if brand_id:
             query += " AND p.brandid = %s"
             params.append(brand_id)
 
-        # Aplicar filtro de preço
         if min_price and max_price:
             query += " AND COALESCE(p.discountedprice, p.baseprice) BETWEEN %s AND %s"
             params.extend([min_price, max_price])
 
-        # Aplicar filtro de estoque
         if stock_filter == 'in_stock':
             query += " AND s.quantity > 0"
         elif stock_filter == 'out_of_stock':
             query += " AND s.quantity = 0"
 
-        # Aplicar filtro de pesquisa (nome ou número de série)
         if search_query:
             query += " AND (p.name ILIKE %s OR p.productserialnumber ILIKE %s)"
             params.extend([f"%{search_query}%", f"%{search_query}%"])
 
-        # Aplicar filtro de desconto (se selecionado)
         if discount_filter == 'com_desconto':
             query += " AND p.discountedprice IS NOT NULL"
         elif discount_filter == 'sem_desconto':
@@ -808,12 +682,11 @@ def category_detail(request, id):
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-        # Buscar todas as categorias (para a barra de topo)
-        cursor.execute("SELECT * FROM static_content.categories")
+        cursor.execute("SELECT * FROM static_content.categories_with_instruments;")
         columns = [col[0] for col in cursor.description]
         categories = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    # Paginação - 15 produtos por página
+
     paginator = Paginator(products, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -822,39 +695,21 @@ def category_detail(request, id):
         'page_obj': page_obj,
         'category_name': category_name,
         'categories': categories,
-        'brands': brands,  # Passamos a lista de marcas para o template
-        'selected_brand': brand_id,  # Marca selecionada
+        'brands': brands,
+        'selected_brand': brand_id, 
         'min_price': min_price,
         'max_price': max_price,
         'min_db_price': min_db_price,
         'max_db_price': max_db_price,
         'selected_stock': stock_filter,
         'search_query': search_query,
-        'selected_discount': discount_filter  # Passar o filtro de desconto para o template
+        'selected_discount': discount_filter 
     }
     return render(request, 'category_detail.html', context)
 
-def category_detail_discount(request, id):
-    # 🔹 Buscar os produtos da categoria com desconto
-    products = Produtos.objects.filter(id_categoria=id, preco__isnull=False).select_related('id_categoria')
 
-    # 🔹 Buscar o nome da categoria
-    category = Categoria.objects.filter(id_cat=id).first()
-
-    # 🔹 Aplicar paginação (15 produtos por página)
-    paginator = Paginator(products, 15)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'products': page_obj,  # Passa apenas os produtos da página atual
-        'category_name': category.nome_cat if category else 'Categoria Não Encontrada',
-    }
-    return render(request, 'category_detail_discount.html', context)
-
-def category_detail_accessories(request, id):
     with connection.cursor() as cursor:
-        # Get products with stock information
+
         cursor.execute('''
             SELECT * FROM dynamic_content.products p 
             JOIN dynamic_content.stock s ON s.productid = p.productid 
@@ -863,7 +718,7 @@ def category_detail_accessories(request, id):
         columns = [col[0] for col in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
         
-        # Get category name
+
         cursor.execute('''
             SELECT name FROM static_content.categories c 
             WHERE categoryid = %s
@@ -906,7 +761,6 @@ def product_detail(request, id):
     context = {'product': product, 'categories': categories}
     return render(request, 'product_detail.html', context)
 
-
 def add_to_cart(request, id, stock):
     cart_cookie = request.COOKIES.get('cart', '{}')
     try:
@@ -931,10 +785,6 @@ def add_to_cart(request, id, stock):
     response.set_cookie('cart', cart_json, path='/', max_age=31536000)
     return response
 
-
-from django.db import connection
-from django.shortcuts import render
-
 def admin(request):
     userID = request.session.get('user_id')
 
@@ -950,18 +800,14 @@ def admin(request):
     else:
         return redirect('index')
 
-        
-    
-
 def get_cart_items(request):
     product_ids = request.GET.get('ids', '')
 
     if not product_ids:
         return JsonResponse({"products": []})
 
-    # 🔹 Decodifica a URL corretamente e substitui "\054" por ","
     product_ids = urllib.parse.unquote(product_ids).replace('\\054', ',')
-    product_ids = [id.strip('"') for id in product_ids.split(',') if id.strip('"').isdigit()]  # Remover aspas extras
+    product_ids = [id.strip('"') for id in product_ids.split(',') if id.strip('"').isdigit()]
 
     if not product_ids:
         return JsonResponse({"products": []})
@@ -985,27 +831,6 @@ def get_cart_items(request):
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
 
     return JsonResponse({"products": products})
-
-def remove_from_cart(request, id):
-    if not id:
-        return JsonResponse({'error': 'ID do produto inválido'}, status=400)
-
-    cart = request.COOKIES.get('cart', '')
-
-    if not cart:
-        return JsonResponse({'message': 'Carrinho já está vazio', 'cart': ''})
-
-    cart = cart.split(',')
-
-    if str(id) in cart:
-        cart.remove(str(id))
-
-    new_cart = ','.join(cart)
-
-    response = JsonResponse({'message': 'Produto removido do carrinho', 'cart': new_cart})
-    response.set_cookie('cart', new_cart, path='/', max_age=31536000)  
-
-    return response
 
 def add_content(request, tablename):
     if request.method == 'POST':
@@ -1070,7 +895,7 @@ def add_content(request, tablename):
 
             return redirect('admin')
 
-        elif tablename == 'dynamic_content.brands':  # 💡 NOVO BLOCO PARA BRANDS
+        elif tablename == 'dynamic_content.brands':
             brandname = request.POST.get('brandname')
 
             if not brandname:
@@ -1084,7 +909,6 @@ def add_content(request, tablename):
 
             return redirect('admin')
 
-    # GET request handling (showing the form)
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT column_name, data_type 
@@ -1132,18 +956,14 @@ def add_content(request, tablename):
     else:
         return redirect('index')
 
-    
-
 def adminview(request, tablename):
     with connection.cursor() as cursor:
-        # Fetch all data from the given table
         cursor.execute(f"SELECT * FROM {tablename}")
         columns = [col[0] for col in cursor.description]
         rows = cursor.fetchall()
 
         data = [dict(zip(columns, row)) for row in rows]
 
-        # Fetch category names and replace the categoryid value if needed
         if(tablename != "static_content.categories"):
             cursor.execute("SELECT categoryid, name FROM static_content.categories")
             category_dict = {row[0]: row[1] for row in cursor.fetchall()}
@@ -1151,7 +971,6 @@ def adminview(request, tablename):
                 if "categoryid" in item and item["categoryid"] in category_dict:
                     item["categoryid"] = category_dict[item["categoryid"]]
 
-    # Paginate (20 rows per page)
     paginator = Paginator(data, 20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1176,15 +995,11 @@ def adminview(request, tablename):
     else:
         return redirect('index')
     
-    
-
-
 def delete_content(request, tablename, id):
     if request.method != "POST":
         return HttpResponse("Método inválido", status=400)
 
     try:
-        # Define correct primary key
         primary_keys = {
             "dynamic_content.products": "productid",
             "static_content.categories": "categoryid",
@@ -1195,12 +1010,11 @@ def delete_content(request, tablename, id):
         if not primary_key:
             return HttpResponse("Tabela inválida", status=400)
 
-        # Check user authentication
+
         userID = request.session.get('user_id')
         if userID is None:
             return redirect('index')
 
-        # Verify if user is an admin
         with connection.cursor() as cursor:
             cursor.execute("SELECT is_user_manager(%s);", [userID])
             isadmin = cursor.fetchone()
@@ -1208,7 +1022,6 @@ def delete_content(request, tablename, id):
         if not (isadmin and isadmin[0]):
             return redirect('index')
 
-        # Execute the DELETE query securely
         with connection.cursor() as cursor:
             query = f"DELETE FROM {tablename} WHERE {primary_key} = %s"
             cursor.execute(query, [id])
@@ -1218,11 +1031,8 @@ def delete_content(request, tablename, id):
     except Exception as e:
         return HttpResponse(f"Erro ao excluir o item: {e}", status=500)
 
-            
-
-
 def edit_content(request, tablename, id):
-    # Verifica se a tabela é válida e define a chave primária correta
+
     primary_keys = {
         "static_content.categories": "categoryid",
         "dynamic_content.products": "productid",
@@ -1234,21 +1044,21 @@ def edit_content(request, tablename, id):
     if not primary_key:
         return HttpResponse("Tabela inválida", status=400)
 
-    # Obtém o ID do utilizador logado
+ 
     userID = request.session.get('user_id')
     if userID is None:
         return redirect('index')
 
-    # Verifica se o utilizador é um manager
+
     with connection.cursor() as cursor:
         cursor.execute("SELECT is_user_manager(%s);", [userID])
         is_manager = cursor.fetchone()
 
     if not (is_manager and is_manager[0]):
-        return redirect('index')  # Redireciona para a página inicial se não for manager
+        return redirect('index')
 
     if request.method == "POST":
-        # Buscar dados existentes
+ 
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
@@ -1256,33 +1066,33 @@ def edit_content(request, tablename, id):
                 return HttpResponse("Registro não encontrado", status=404)
 
             columns = [col[0] for col in cursor.description]
-            existing_data = dict(zip(columns, row))  # Guarda os valores existentes
+            existing_data = dict(zip(columns, row)) 
 
         update_columns = []
         update_values = []
 
-        print("POST DATA:", request.POST.dict())  # Debugging
+        print("POST DATA:", request.POST.dict())  
 
         for col in columns:
             if col == primary_key:
-                continue  # Ignorar chave primária
+                continue
             elif col in ["image_url", "preview_img"]:
-                image_file = request.FILES.get(col)  # Obtém o arquivo enviado
+                image_file = request.FILES.get(col) 
 
-                if image_file:  # Se houver novo upload
+                if image_file: 
                     upload_result = upload_to_cloudinary.upload_image(image_file)
-                    print("UPLOAD RESULT:", upload_result)  # Debugging
+                    print("UPLOAD RESULT:", upload_result)
 
-                    image_url = upload_result if upload_result else existing_data[col]  # Mantém a imagem antiga
+                    image_url = upload_result if upload_result else existing_data[col] 
                 else:
-                    image_url = existing_data[col]  # Mantém a imagem antiga
+                    image_url = existing_data[col]  
 
                 update_columns.append(f"{col} = %s")
                 update_values.append(image_url)
 
             else:
                 value = request.POST.get(col, existing_data[col])
-                if value in ["", None, "None"]:  # Se for vazio ou "None", mantém o valor antigo
+                if value in ["", None, "None"]: 
                     value = existing_data[col]
                 update_columns.append(f"{col} = %s")
                 update_values.append(value)
@@ -1291,12 +1101,12 @@ def edit_content(request, tablename, id):
 
         update_query = f"UPDATE {tablename} SET {', '.join(update_columns)} WHERE {primary_key} = %s"
         
-        print("QUERY:", update_query)  # Debugging
-        print("VALUES:", update_values)  # Debugging
+        print("QUERY:", update_query)
+        print("VALUES:", update_values)
 
         with connection.cursor() as cursor:
             cursor.execute(update_query, update_values)
-            connection.commit()  # Garante que as alterações sejam persistidas
+            connection.commit()
 
         return redirect('adminview', tablename=tablename)
 

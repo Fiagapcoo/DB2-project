@@ -36,7 +36,7 @@ def login(request):
             with connection.cursor() as cursor:
 
                 cursor.execute(
-                    "SELECT HR.get_user_details_by_email('%s');",
+                    "SELECT * FROM HR.get_user_details_by_email(%s);",
                     [input_email]
                 )
                 user = cursor.fetchone()
