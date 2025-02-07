@@ -270,10 +270,6 @@ def top_bar_accessories(request):
 def navbar(request):
     return render(request, 'navbar.html')
 
-def brand(request, brand_id):
-    brand = get_object_or_404(Brand, id=brand_id)
-    return render(request, 'brand.html', {'brand': brand})
-
 def filter_card(request):
     categorias = Categoria.objects.all()
     return render(request, 'filter_card.html', {'categorias': categorias})
@@ -936,8 +932,26 @@ def add_to_cart(request, id, stock):
     return response
 
 
+from django.db import connection
+from django.shortcuts import render
+
 def admin(request):
-    return render(request, 'admin.html')
+    userID = request.session.get('user_id')
+
+    if userID is None:
+        return redirect('index')
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT is_user_manager(%s);", [userID])
+        isadmin = cursor.fetchone()
+
+    if isadmin and isadmin[0]:
+        return render(request, 'admin.html')
+    else:
+        return redirect('index')
+
+        
+    
 
 def get_cart_items(request):
     product_ids = request.GET.get('ids', '')
@@ -1104,9 +1118,21 @@ def add_content(request, tablename):
         'brands': brands
     }
 
-    print(context)
+    userID = request.session.get('user_id')
 
-    return render(request, 'add_content.html', context)
+    if userID is None:
+        return redirect('index')
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT is_user_manager(%s);", [userID])
+        isadmin = cursor.fetchone()
+
+    if isadmin and isadmin[0]:
+        return render(request, 'add_content.html', context)
+    else:
+        return redirect('index')
+
+    
 
 def adminview(request, tablename):
     with connection.cursor() as cursor:
@@ -1136,49 +1162,93 @@ def adminview(request, tablename):
         'page_obj': page_obj,
     }
     
-    print("context:   ", context)
+    userID = request.session.get('user_id')
+
+    if userID is None:
+        return redirect('index')
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT is_user_manager(%s);", [userID])
+        isadmin = cursor.fetchone()
+
+    if isadmin and isadmin[0]:
+        return render(request, 'adminview.html', context)
+    else:
+        return redirect('index')
     
-    return render(request, 'adminview.html', context)
+    
+
 
 def delete_content(request, tablename, id):
-    if request.method == "POST":
-        try:
-            # Definir chave primária correta
-            if tablename == "dynamic_content.products":
-                primary_key = "productid"
-            elif tablename == "static_content.categories":
-                primary_key = "categoryid"
-            elif tablename == "dynamic_content.brands":
-                primary_key = "brandid"
-            else:
-                return HttpResponse("Tabela inválida", status=400)
+    if request.method != "POST":
+        return HttpResponse("Método inválido", status=400)
 
-            with connection.cursor() as cursor:
-                query = f"DELETE FROM {tablename} WHERE {primary_key} = %s"
-                cursor.execute(query, [id])
-                connection.commit()
+    try:
+        # Define correct primary key
+        primary_keys = {
+            "dynamic_content.products": "productid",
+            "static_content.categories": "categoryid",
+            "dynamic_content.brands": "brandid"
+        }
+        
+        primary_key = primary_keys.get(tablename)
+        if not primary_key:
+            return HttpResponse("Tabela inválida", status=400)
 
-            return redirect('adminview', tablename=tablename)
+        # Check user authentication
+        userID = request.session.get('user_id')
+        if userID is None:
+            return redirect('index')
 
-        except Exception as e:
-            return HttpResponse(f"Erro ao excluir o item: {e}", status=500)
+        # Verify if user is an admin
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT is_user_manager(%s);", [userID])
+            isadmin = cursor.fetchone()
 
-    return HttpResponse("Método inválido", status=400)
+        if not (isadmin and isadmin[0]):
+            return redirect('index')
+
+        # Execute the DELETE query securely
+        with connection.cursor() as cursor:
+            query = f"DELETE FROM {tablename} WHERE {primary_key} = %s"
+            cursor.execute(query, [id])
+
+        return redirect('adminview', tablename=tablename)
+
+    except Exception as e:
+        return HttpResponse(f"Erro ao excluir o item: {e}", status=500)
+
+            
+
 
 def edit_content(request, tablename, id):
-    # Definir chave primária correta
-    if tablename == "static_content.categories":
-        primary_key = "categoryid"
-    elif tablename == "dynamic_content.products":
-        primary_key = "productid"
-    elif tablename == "dynamic_content.brands":
-        primary_key = "brandid"
-    elif tablename == "hr.users":
-        primary_key = "userid"
-    else:
+    # Verifica se a tabela é válida e define a chave primária correta
+    primary_keys = {
+        "static_content.categories": "categoryid",
+        "dynamic_content.products": "productid",
+        "dynamic_content.brands": "brandid",
+        "hr.users": "userid"
+    }
+
+    primary_key = primary_keys.get(tablename)
+    if not primary_key:
         return HttpResponse("Tabela inválida", status=400)
 
+    # Obtém o ID do utilizador logado
+    userID = request.session.get('user_id')
+    if userID is None:
+        return redirect('index')
+
+    # Verifica se o utilizador é um manager
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT is_user_manager(%s);", [userID])
+        is_manager = cursor.fetchone()
+
+    if not (is_manager and is_manager[0]):
+        return redirect('index')  # Redireciona para a página inicial se não for manager
+
     if request.method == "POST":
+        # Buscar dados existentes
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {tablename} WHERE {primary_key} = %s", [id])
             row = cursor.fetchone()
@@ -1186,29 +1256,24 @@ def edit_content(request, tablename, id):
                 return HttpResponse("Registro não encontrado", status=404)
 
             columns = [col[0] for col in cursor.description]
-            existing_data = dict(zip(columns, row))  # Armazena os valores existentes
+            existing_data = dict(zip(columns, row))  # Guarda os valores existentes
 
         update_columns = []
         update_values = []
 
-        print("POST DATA:", request.POST.dict())  # Depuração
+        print("POST DATA:", request.POST.dict())  # Debugging
 
         for col in columns:
             if col == primary_key:
-                continue  # Ignorar a chave primária
+                continue  # Ignorar chave primária
             elif col in ["image_url", "preview_img"]:
                 image_file = request.FILES.get(col)  # Obtém o arquivo enviado
 
                 if image_file:  # Se houver novo upload
                     upload_result = upload_to_cloudinary.upload_image(image_file)
-                    print("UPLOAD RESULT:", upload_result)  # Depuração
+                    print("UPLOAD RESULT:", upload_result)  # Debugging
 
-                    if upload_result:  # Garante que não é None antes de usar
-                        image_url = upload_result
-                    else:
-                        print(f"Erro ao fazer upload para o Cloudinary: {upload_result}")
-                        image_url = existing_data[col]  # Mantém a imagem antiga
-
+                    image_url = upload_result if upload_result else existing_data[col]  # Mantém a imagem antiga
                 else:
                     image_url = existing_data[col]  # Mantém a imagem antiga
 
@@ -1226,8 +1291,8 @@ def edit_content(request, tablename, id):
 
         update_query = f"UPDATE {tablename} SET {', '.join(update_columns)} WHERE {primary_key} = %s"
         
-        print("QUERY:", update_query)  # Depuração
-        print("VALUES:", update_values)  # Depuração
+        print("QUERY:", update_query)  # Debugging
+        print("VALUES:", update_values)  # Debugging
 
         with connection.cursor() as cursor:
             cursor.execute(update_query, update_values)
