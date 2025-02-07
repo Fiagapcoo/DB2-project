@@ -29,7 +29,7 @@ $$;
 CREATE OR REPLACE FUNCTION HR.user_insert_trigger_func()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Insert or update user password into the dictionary
+    -- Inserir uma nova entrada sempre que um usuário for inserido ou sua senha for atualizada
     INSERT INTO SECURITY.User_Passwords_Dictionary (
         UserID,
         HashedPassword,
@@ -38,10 +38,7 @@ BEGIN
         NEW.UserID,
         NEW.HashedPassword,
         CURRENT_TIMESTAMP
-    )
-    ON CONFLICT (UserID) DO UPDATE 
-    SET HashedPassword = EXCLUDED.HashedPassword, 
-        CreatedAt = CURRENT_TIMESTAMP;
+    );
 
     RETURN NEW;
 END;
