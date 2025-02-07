@@ -287,10 +287,17 @@ def reset_password(request):
         hashed_password = encrypt_string(new_password)
         with connection.cursor() as cursor:
             cursor.execute("""
-                UPDATE hr.users
-                SET hashedpassword = %s
-                WHERE email = %s
-            """, [hashed_password, email])
+                           select * from "security".user_passwords_dictionary upd where userid = %s and hashedpassword = %s
+                           """, [user_id, hashed_password])
+            row = cursor.fetchone()
+            if row:
+                return JsonResponse({"success": False, "error": "Senha já utilizada anteriormente."}, status=400)
+            else:
+                cursor.execute("""
+                    UPDATE hr.users
+                    SET hashedpassword = %s
+                    WHERE email = %s
+                """, [hashed_password, email])
 
         # (Opcional) Exclui o registro de recuperação para evitar reutilização
         with connection.cursor() as cursor:
