@@ -29,7 +29,7 @@ $$;
 CREATE OR REPLACE FUNCTION HR.user_insert_trigger_func()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Insert new user password into the dictionary
+    -- Insert or update user password into the dictionary
     INSERT INTO SECURITY.User_Passwords_Dictionary (
         UserID,
         HashedPassword,
@@ -38,16 +38,34 @@ BEGIN
         NEW.UserID,
         NEW.HashedPassword,
         CURRENT_TIMESTAMP
-    );
+    )
+    ON CONFLICT (UserID) DO UPDATE 
+    SET HashedPassword = EXCLUDED.HashedPassword, 
+        CreatedAt = CURRENT_TIMESTAMP;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create the trigger
 CREATE TRIGGER user_insert_trigger
-AFTER INSERT ON HR.Users
+AFTER INSERT OR UPDATE ON HR.Users
 FOR EACH ROW
-EXECUTE PROCEDURE HR.user_insert_trigger_func();
+EXECUTE FUNCTION HR.user_insert_trigger_func();
+
+
+CREATE OR REPLACE FUNCTION is_user_manager(p_userid INT) 
+RETURNS BOOLEAN AS $$
+DECLARE 
+    manager_status BOOLEAN;
+BEGIN
+    SELECT ismanager INTO manager_status
+    FROM hr.user
+    WHERE userid = p_userid;
+
+    RETURN manager_status;
+END;
+$$ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE PROCEDURE HR.update_user(

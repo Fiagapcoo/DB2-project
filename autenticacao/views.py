@@ -250,8 +250,17 @@ def reset_password(request):
 
         if new_password != confirm_password:
             return JsonResponse({"success": False, "error": "As senhas não coincidem."}, status=400)
-
+        
         hashed_password = encrypt_string(new_password)
+        
+        with connection.cursor() as cursor:
+            cursor.execute('''
+               select * from "security".user_passwords_dictionary upd where hashedpassword = %s
+            ''', [hashed_password])
+            row = cursor.fetchone()
+            if row:
+                return JsonResponse({"success": False, "error": "Senha não pode ser repetida."}, status=400)
+
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE hr.users
