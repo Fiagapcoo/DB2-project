@@ -5,7 +5,6 @@
     Admin Dashboard
 </h2>
 
-
 <div class="row">
     <div class="col-md-6">
         <canvas id="barChart"></canvas>
@@ -20,17 +19,19 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        const payment_methods = {{ payment_methods_json|safe }};
+        
         const barCtx = document.getElementById('barChart').getContext('2d');
         new Chart(barCtx, {
             type: 'bar',
             data: {
-                labels: ['January', 'February', 'March', 'April', 'May'],
+                labels: payment_methods.map(pm => pm.payment_method),
                 datasets: [{
-                    label: 'Projects Completed',
-                    data: [12, 19, 3, 5, 2],
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
+                    label: 'Total Amount by Payment Method',
+                    data: payment_methods.map(pm => pm.total_amount),
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.5)',
+                    ],
                 }]
             },
             options: {
@@ -38,25 +39,54 @@
                 maintainAspectRatio: false,
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Amount'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Payment Methods Distribution'
+                    },
+                    legend: {
+                        display: false  // Hide legend since we have only one dataset
                     }
                 }
             }
         });
 
+        // Get the orders data from the template
+        const orders = {{ orders|safe }};
+
         const pieCtx = document.getElementById('pieChart').getContext('2d');
         new Chart(pieCtx, {
             type: 'pie',
             data: {
-                labels: ['Development', 'Design', 'Marketing'],
+                labels: orders.map(order => order.order_status),
                 datasets: [{
-                    data: [40, 30, 30],
-                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+                    data: orders.map(order => order.order_count),
+                    backgroundColor: [
+                        '#FFA500', // Orange for Pending
+                        '#28A745', // Green for Completed
+                        '#17A2B8'  // Blue for Processing
+                    ]
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Order Status Distribution'
+                    }
+                }
             }
         });
     });

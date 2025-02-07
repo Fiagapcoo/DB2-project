@@ -9,6 +9,7 @@ from . import upload_to_cloudinary
 import json
 import random
 from threading import Timer
+from django.core.serializers.json import DjangoJSONEncoder
 
 def process_checkout(request):
     if request.method != "POST":
@@ -772,6 +773,8 @@ def add_to_cart(request, id, stock):
     response.set_cookie('cart', cart_json, path='/', max_age=31536000)
     return response
 
+
+
 def admin(request):
     userID = request.session.get('user_id')
 
@@ -783,10 +786,27 @@ def admin(request):
         isadmin = cursor.fetchone()
 
     if isadmin and isadmin[0]:
-        return render(request, 'admin.html')
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM get_order_status_data();")
+            columns = [col[0] for col in cursor.description]
+            orders = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            print("ORDERS:  ", orders)
+            orders_json = json.dumps(orders, cls=DjangoJSONEncoder)
+            
+            cursor.execute("select * from get_payment_method_totals()")
+            columns = [col[0] for col in cursor.description]
+            payment_methods = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            payment_methods_json = json.dumps(payment_methods, cls=DjangoJSONEncoder)
+            
+            context = {
+                'orders': orders_json,
+                'payment_methods_json': payment_methods_json
+            }
+    
+            return render(request, 'admin.html', context)
     else:
         return redirect('index')
-
+    
 def get_cart_items(request):
     product_ids = request.GET.get('ids', '')
 
