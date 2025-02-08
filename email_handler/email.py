@@ -12,21 +12,19 @@ load_dotenv()
 
 
 def gerar_codigo_recuperacao():
-    """Gera um código aleatório de 6 dígitos para recuperação de senha."""
+    """Cria um código aleatório de 6 dígitos para recuperação de palavra passe."""
     return str(random.randint(100000, 999999))
 
 def enviar_email_recuperacao(email_destino, codigo_recuperacao):
-    """Envia um e-mail com o código de recuperação para o usuário."""
+    """Envia um e-mail com o código de recuperação para o utilizador."""
 
     brevo_api_key = os.getenv("BREVO_API_KEY")
 
     configuration = Configuration()
     configuration.api_key['api-key'] = brevo_api_key
 
-    # Cria o cliente da API sem usar 'with'
     api_client = ApiClient(configuration)
 
-    # Instancia a API de e-mails transacionais
     api_instance = TransactionalEmailsApi(api_client)
 
     html_content = f"""
