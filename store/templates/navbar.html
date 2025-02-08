@@ -34,6 +34,9 @@
                     <i class="bi bi-person icon"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    {% if request.session.ismanager %}
+                    <li><a class="dropdown-item" href="{% url 'admin' %}">Admin Page</a></li>
+                    {% endif %}
                     <li><a class="dropdown-item" href="{% url 'order_history' %}">Histórico de Vendas</a></li>
                     <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                 </ul>

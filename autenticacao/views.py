@@ -46,7 +46,7 @@ def login(request):
                 messages.error(request, 'Credenciais inválidas.')
                 return render(request, 'login.html')
 
-            user_id, name, email, hashed_password = user
+            user_id, name, email, hashed_password, ismanager = user
 
             try:
  
@@ -56,6 +56,8 @@ def login(request):
                     request.session['user_id'] = user_id
                     request.session['user_name'] = name
                     request.session['user_email'] = email
+                    if(ismanager):
+                        request.session['ismanager'] = ismanager
                     return redirect('index')
 
             except InvalidToken:
