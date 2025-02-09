@@ -1,7 +1,6 @@
 CREATE OR REPLACE FUNCTION HR.user_insert_trigger_func()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Inserir uma nova entrada sempre que um usuário for inserido ou sua senha for atualizada
     INSERT INTO SECURITY.User_Passwords_Dictionary (
         UserID,
         HashedPassword,
@@ -16,7 +15,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create the trigger
 CREATE TRIGGER user_insert_trigger
 AFTER INSERT OR UPDATE ON HR.Users
 FOR EACH ROW
