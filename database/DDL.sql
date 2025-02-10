@@ -153,6 +153,6 @@ CREATE TABLE CONTROL.codigos_recuperacao (
     criacao TIMESTAMP,
     codigo INT, --codigo de 6 digitos
     codigoSeguro varchar(255),
-    CONSTRAINT fk_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE,
+    CONSTRAINT fk_userid FOREIGN KEY (UserID) REFERENCES HR.Users(UserID) ON DELETE CASCADE
 
 )

@@ -1,5 +1,5 @@
 -- Inserção de usuários na tabela HR.Users
-INSERT INTO HR.Users (Name, Phone, Email, HashedPassword, ProfilePic, IsManager)
+INSERT INTO HR.Users (Name, Phone, Email, HashedPassword, IsManager)
 VALUES 
 ('João Silva', '+351912345678', 'joao.silva@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', TRUE),
 ('Maria Oliveira', '+351923456789', 'maria.oliveira@email.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', FALSE),
