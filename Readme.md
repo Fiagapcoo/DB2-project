@@ -131,11 +131,6 @@ A robust Django-based e-commerce platform developed as a practical assignment fo
    - Add new SQL scripts in the appropriate directory under `database/logic_objects/`
    - Follow the established schema organization (CONTROL, DYNAMIC_CONTENT, etc.)
 
-3. **Running Tests**
-   ```bash
-   python manage.py test
-   ```
-
 ## 🤝 Contributing
 
 1. Fork the repository
